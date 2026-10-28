@@ -1,9 +1,8 @@
 const { app, BrowserWindow } = require('electron');
-process.env.PORT = '0';
-const server = require('./server');
+const { ready } = require('./server');
 
 async function createWindow() {
-  const port = await server.ready;
+  const port = await ready;
   const window = new BrowserWindow({
     width: 1440,
     height: 920,
