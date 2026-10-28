@@ -35,11 +35,13 @@
     }
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
     "better-sqlite3": "^13.0.3"
   },
   "devDependencies": {
-    "localtunnel": "^2.0.2",
     "electron": "^39.0.0",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "localtunnel": "^2.0.2",
+    "supabase": "^2.122.0"
   }
 }
