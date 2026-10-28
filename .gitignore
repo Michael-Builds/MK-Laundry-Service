@@ -1,0 +1,8 @@
+node_modules/
+dist/
+laundry.sqlite
+laundry.sqlite-shm
+laundry.sqlite-wal
+.env
+.env.*
+!.env.example

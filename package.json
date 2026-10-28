@@ -1,0 +1,45 @@
+{
+  "name": "laundry-desk",
+  "version": "1.0.0",
+  "description": "MK Laundry Service web application",
+  "author": "MK Laundry Service",
+  "main": "main.js",
+  "scripts": {
+    "start": "node server.js",
+    "tunnel": "lt --port 3000",
+    "desktop": "electron .",
+    "build:windows": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.mklaundry.service",
+    "productName": "MK Laundry Service",
+    "files": [
+      "index.html",
+      "styles.css",
+      "renderer.js",
+      "server.js",
+      "db.js",
+      "main.js",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "artifactName": "MK-Laundry-Service-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3"
+  },
+  "devDependencies": {
+    "localtunnel": "^2.0.2",
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.12"
+  }
+}
