@@ -1,7 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { getState, saveState } = require('./db');
+const { getState, initializeState, saveState } = require('./db');
 
 const requestedPort = Number(process.env.PORT) || 3000;
 const host = process.env.HOST || '0.0.0.0';
@@ -13,31 +13,40 @@ const contentTypes = {
   '.json': 'application/json; charset=utf-8'
 };
 
-const server = http.createServer((request, response) => {
+const server = http.createServer(async (request, response) => {
   if (request.url === '/api/state' && request.method === 'GET') {
-    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-    response.end(JSON.stringify(getState()));
+    try {
+      response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      response.end(JSON.stringify(await getState()));
+    } catch (error) {
+      console.error('Failed to load application state:', error);
+      response.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+      response.end(JSON.stringify({ error: 'Could not load application data' }));
+    }
     return;
   }
   if (request.url === '/api/state' && request.method === 'POST') {
     let body = '';
     request.on('data', chunk => { body += chunk; });
-    request.on('end', () => {
+    request.on('end', async () => {
       try {
-        saveState(JSON.parse(body));
+        const nextState = JSON.parse(body);
+        await saveState(nextState);
         response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
         response.end(JSON.stringify({ ok: true }));
       } catch (error) {
+        console.error('Failed to save application state:', error);
         response.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
-        response.end(JSON.stringify({ error: 'Invalid application data' }));
+        response.end(JSON.stringify({ error: error instanceof SyntaxError ? 'Invalid application data' : 'Could not save application data' }));
       }
     });
     return;
   }
-  const requestedPath = request.url === '/' ? '/index.html' : request.url.split('?')[0];
-  const filePath = path.normalize(path.join(root, requestedPath));
+  const requestedPath = new URL(request.url, `http://${request.headers.host || 'localhost'}`).pathname;
+  const relativePath = requestedPath === '/' ? 'index.html' : requestedPath.replace(/^[/\\]+/, '');
+  const filePath = path.resolve(root, relativePath);
 
-  if (!filePath.startsWith(root)) {
+  if (filePath !== root && !filePath.startsWith(`${root}${path.sep}`)) {
     response.writeHead(403);
     response.end('Forbidden');
     return;
@@ -58,7 +67,7 @@ const server = http.createServer((request, response) => {
   });
 });
 
-const ready = new Promise((resolve, reject) => {
+const ready = initializeState().then(() => new Promise((resolve, reject) => {
   server.once('error', reject);
   server.listen(requestedPort, host, () => {
     const address = server.address();
@@ -66,6 +75,6 @@ const ready = new Promise((resolve, reject) => {
     console.log(`MK Laundry Service is running on port ${actualPort}`);
     resolve(actualPort);
   });
-});
+}));
 
 module.exports = { server, ready };

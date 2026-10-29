@@ -1,0 +1,29 @@
+{
+  "orders": [],
+  "employees": [
+    {
+      "username": "admin",
+      "password": "admin",
+      "role": "Administrator",
+      "fullName": "Administrator",
+      "phone": "",
+      "email": ""
+    }
+  ],
+  "inventory": [
+    {
+      "id": "1793228169173-3uqko1du5kr",
+      "name": "shirt",
+      "quantity": 1,
+      "unitCost": 50,
+      "discount": 0
+    },
+    {
+      "id": "1793206089940-yvfbztxgsu",
+      "name": "trousser",
+      "quantity": 1,
+      "unitCost": 70,
+      "discount": 0
+    }
+  ]
+}

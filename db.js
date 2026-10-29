@@ -1,27 +1,49 @@
 const fs = require('fs');
 const path = require('path');
-const { createClient } = require('@supabase/supabase-js');
-
-const supabaseUrl = process.env.SUPABASE_URL || 'https://supabase.co';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || 'sb_publishable_vY94uPH0vLi825SKoJ33GA_KUAg5mdL';
-const supabase = createClient(supabaseUrl, supabaseKey);
+require('dotenv').config({ path: path.join(__dirname, '.env.local') });
+const { cert, getApps, initializeApp } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
 const statePath = path.join(__dirname, 'app-state.json');
+const projectId = process.env.FIREBASE_PROJECT_ID || 'laundry';
+const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
 
-function getState() {
-  try {
-    if (!fs.existsSync(statePath)) {
-      return {};
-    }
+if (!serviceAccountJson) {
+  throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON is required to connect to Firestore.');
+}
 
-    const raw = fs.readFileSync(statePath, 'utf8').trim();
-    return raw ? JSON.parse(raw) : {};
-  } catch (error) {
-    return {};
+let serviceAccount;
+try {
+  serviceAccount = JSON.parse(serviceAccountJson);
+} catch (error) {
+  throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON must contain valid JSON.');
+}
+
+const firebaseApp = getApps().length
+  ? getApps()[0]
+  : initializeApp({ credential: cert(serviceAccount), projectId });
+const firestore = getFirestore(firebaseApp);
+const stateDocument = firestore.collection('application').doc('state');
+
+function readLocalState() {
+  if (!fs.existsSync(statePath)) return {};
+  const raw = fs.readFileSync(statePath, 'utf8').trim();
+  return raw ? JSON.parse(raw) : {};
+}
+
+async function initializeState() {
+  const snapshot = await stateDocument.get();
+  if (!snapshot.exists) {
+    await stateDocument.set(readLocalState());
   }
 }
 
-function saveState(nextState) {
-  fs.writeFileSync(statePath, JSON.stringify(nextState, null, 2));
+async function getState() {
+  const snapshot = await stateDocument.get();
+  return snapshot.exists ? snapshot.data() : {};
 }
 
-module.exports = { supabase, getState, saveState };
+async function saveState(nextState) {
+  await stateDocument.set(nextState);
+}
+
+module.exports = { getState, initializeState, saveState };

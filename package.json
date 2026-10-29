@@ -35,8 +35,11 @@
     }
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.10.0",
     "@supabase/supabase-js": "^2.118.0",
-    "better-sqlite3": "^13.0.3"
+    "better-sqlite3": "^13.0.3",
+    "dotenv": "^16.6.1",
+    "firebase-admin": "^13.6.0"
   },
   "devDependencies": {
     "electron": "^39.0.0",

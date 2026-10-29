@@ -26,6 +26,7 @@ button { cursor: pointer; border: 0; }
 h1, h2, h3, p { margin-top: 0; } h1 { font-size: 30px; margin-bottom: 8px; } h2 { font-size: 27px; margin: 0; } h3 { font-size: 16px; }
 .muted, small { color: var(--muted); } label { display: grid; gap: 7px; color: #536078; font-weight: 650; margin: 18px 0; }
 input, select { width: 100%; padding: 12px 13px; border: 1px solid var(--border); border-radius: 9px; color: var(--text); background: white; outline: none; }
+.required-mark { color: var(--red); }
 input:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px #3867f218; }
 .primary-button, .secondary-button, .danger-button { padding: 11px 16px; border-radius: 9px; font-weight: 750; }
 .primary-button { background: var(--blue); color: white; } .secondary-button { color: var(--blue); background: var(--pale-blue); } .danger-button { color: var(--red); background: #fff0f1; }
