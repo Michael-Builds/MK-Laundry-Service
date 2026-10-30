@@ -450,7 +450,68 @@ function bindInventoryActions(view, form) {
 }
 
 function renderReports(view) {
-  view.innerHTML = `<div class="card"><div class="card-header"><h3>Reports</h3></div><p>Total orders: <strong>${state.orders.length}</strong></p><p>Total revenue: <strong>${formatCurrency(state.orders.reduce((sum, order) => sum + Number(order.total || 0), 0))}</strong></p></div>`;
+  const totalRevenue = state.orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+  const completedOrders = state.orders.filter(order => order.status === 'Completed').length;
+  const reportRows = state.orders.map(order => `
+    <tr>
+      <td>${escapeHtml(order.name)}</td>
+      <td>${escapeHtml(order.phone)}</td>
+      <td>${escapeHtml(order.delivery)}</td>
+      <td>${escapeHtml(order.payment)}</td>
+      <td>${escapeHtml(order.status)}</td>
+      <td>${formatCurrency(order.total)}</td>
+    </tr>`).join('');
+  view.innerHTML = `<div class="card">
+    <div class="card-header"><h3>Reports</h3><button class="primary-button" id="generate-excel">Generate Excel</button></div>
+    <div class="grid report-stats">
+      <div class="card stat-card"><p>Total orders</p><strong>${state.orders.length}</strong></div>
+      <div class="card stat-card"><p>Completed orders</p><strong>${completedOrders}</strong></div>
+      <div class="card stat-card"><p>Total revenue</p><strong>${formatCurrency(totalRevenue)}</strong></div>
+    </div>
+    <div class="table-card report-table-card" style="margin-top:22px">
+      <table><thead><tr><th>Customer</th><th>Phone</th><th>Delivery date</th><th>Payment</th><th>Status</th><th>Total</th></tr></thead>
+      <tbody>${reportRows || '<tr><td colspan="6" class="empty">No orders to report.</td></tr>'}</tbody></table>
+    </div>
+  </div>`;
+  view.querySelector('#generate-excel').addEventListener('click', () => downloadExcelReport());
+}
+
+function downloadExcelReport() {
+  const totalRevenue = state.orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+  const rows = [
+    ['MK Laundry Service - Order Report', '', '', '', '', ''],
+    ['Generated', new Date().toLocaleString(), '', '', '', ''],
+    ['Total orders', state.orders.length, '', '', '', ''],
+    ['Completed orders', state.orders.filter(order => order.status === 'Completed').length, '', '', '', ''],
+    ['Total revenue', totalRevenue, '', '', '', ''],
+    ['', '', '', '', '', ''],
+    ['Customer', 'Phone', 'Delivery date', 'Payment', 'Status', 'Total']
+  ];
+  state.orders.forEach(order => {
+    rows.push([
+      order.name || '',
+      order.phone || '',
+      order.delivery || '',
+      order.payment || '',
+      order.status || '',
+      Number(order.total || 0)
+    ]);
+  });
+  const worksheetRows = rows.map(row => `<Row>${row.map(value => {
+    const type = typeof value === 'number' ? 'Number' : 'String';
+    return `<Cell><Data ss:Type="${type}">${escapeHtml(value)}</Data></Cell>`;
+  }).join('')}</Row>`).join('');
+  const workbook = `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+  <Worksheet ss:Name="Order Report"><Table>${worksheetRows}</Table></Worksheet>
+</Workbook>`;
+  const blob = new Blob([workbook], { type: 'application/vnd.ms-excel' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `mk-laundry-report-${new Date().toISOString().slice(0, 10)}.xls`;
+  link.click();
+  URL.revokeObjectURL(link.href);
 }
 
 function renderSettings(view) {

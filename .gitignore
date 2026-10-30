@@ -6,3 +6,4 @@ laundry.sqlite-wal
 .env
 .env.*
 !.env.example
+firebase-service-account.json.json
