@@ -158,17 +158,15 @@ export function DataTable<T>({
             <label className="inline-flex items-center gap-2">
               <span className="whitespace-nowrap">Rows</span>
               <Select
-                className="h-9 w-[84px]"
+                className="w-[96px]"
                 value={String(pageSize)}
-                onChange={(event) => setPageSize(Number(event.target.value))}
+                onChange={(value) => setPageSize(Number(value))}
+                options={pageSizeOptions.map((option) => ({
+                  value: String(option),
+                  label: String(option),
+                }))}
                 aria-label="Rows per page"
-              >
-                {pageSizeOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </Select>
+              />
             </label>
           </div>
 

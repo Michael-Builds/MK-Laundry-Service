@@ -21,13 +21,12 @@ export function OrderStatusSelect({
   return (
     <Select
       value={value}
-      onChange={(event) => onChange(event.target.value as OrderStatus)}
-    >
-      {statuses.map((status) => (
-        <option key={status} value={status}>
-          {status}
-        </option>
-      ))}
-    </Select>
+      onChange={(next) => onChange(next as OrderStatus)}
+      options={statuses.map((status) => ({
+        value: status,
+        label: status,
+      }))}
+      aria-label="Order status"
+    />
   );
 }

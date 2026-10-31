@@ -247,12 +247,13 @@ export default function EmployeesPage() {
             <Select
               id="emp-role"
               value={role}
-              onChange={(event) => setRole(event.target.value as Role)}
-            >
-              <option value="Employee">Employee</option>
-              <option value="Manager">Manager</option>
-              <option value="Administrator">Administrator</option>
-            </Select>
+              onChange={(value) => setRole(value as Role)}
+              options={[
+                { value: "Employee", label: "Employee" },
+                { value: "Manager", label: "Manager" },
+                { value: "Administrator", label: "Administrator" },
+              ]}
+            />
           </Field>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Phone" htmlFor="emp-phone">

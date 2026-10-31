@@ -40,9 +40,15 @@ export function ServicePicker({
     onChange(items.filter((_, i) => i !== index));
   };
 
+  const options = services.map((service) => ({
+    value: service.id,
+    label: service.name,
+    description: formatCurrency(service.unitPrice),
+  }));
+
   return (
     <div className="space-y-3">
-      <div className="hidden grid-cols-[1.4fr_0.6fr_0.8fr_40px] gap-2 px-1 text-[11px] font-bold tracking-[0.08em] text-slate-500 uppercase sm:grid">
+      <div className="hidden grid-cols-[minmax(0,1.6fr)_110px_120px_44px] gap-3 px-1 text-[11px] font-bold tracking-[0.08em] text-slate-500 uppercase lg:grid">
         <span>Service</span>
         <span>Qty</span>
         <span>Line total</span>
@@ -52,39 +58,51 @@ export function ServicePicker({
       {items.map((item, index) => (
         <div
           key={`${item.serviceId}-${index}`}
-          className="grid grid-cols-1 gap-2 rounded-xl border border-line bg-white p-3 sm:grid-cols-[1.4fr_0.6fr_0.8fr_40px] sm:items-center sm:border-0 sm:bg-transparent sm:p-0"
+          className="grid grid-cols-1 gap-3 rounded-xl border border-line bg-mist/40 p-3 lg:grid-cols-[minmax(0,1.6fr)_110px_120px_44px] lg:items-center lg:bg-transparent lg:p-0 lg:border-0"
         >
-          <Select
-            value={item.serviceId}
-            onChange={(event) => {
-              const service = services.find((s) => s.id === event.target.value);
-              if (!service) return;
-              updateItem(index, {
-                serviceId: service.id,
-                name: service.name,
-                unitPrice: service.unitPrice,
-              });
-            }}
-          >
-            {services.map((service) => (
-              <option key={service.id} value={service.id}>
-                {service.name} — {formatCurrency(service.unitPrice)}
-              </option>
-            ))}
-          </Select>
-          <Input
-            type="number"
-            min={1}
-            value={item.quantity}
-            onChange={(event) =>
-              updateItem(index, {
-                quantity: Math.max(1, Number(event.target.value) || 1),
-              })
-            }
-          />
-          <p className="px-1 text-sm font-semibold text-teal">
-            {formatCurrency(item.quantity * item.unitPrice)}
-          </p>
+          <div>
+            <p className="mb-1.5 text-xs font-semibold text-slate-500 lg:hidden">
+              Service
+            </p>
+            <Select
+              value={item.serviceId}
+              options={options}
+              onChange={(nextId) => {
+                const service = services.find((s) => s.id === nextId);
+                if (!service) return;
+                updateItem(index, {
+                  serviceId: service.id,
+                  name: service.name,
+                  unitPrice: service.unitPrice,
+                });
+              }}
+              aria-label={`Service for item ${index + 1}`}
+            />
+          </div>
+          <div>
+            <p className="mb-1.5 text-xs font-semibold text-slate-500 lg:hidden">
+              Qty
+            </p>
+            <Input
+              type="number"
+              min={1}
+              value={item.quantity}
+              onChange={(event) =>
+                updateItem(index, {
+                  quantity: Math.max(1, Number(event.target.value) || 1),
+                })
+              }
+              aria-label={`Quantity for item ${index + 1}`}
+            />
+          </div>
+          <div className="flex items-center justify-between gap-3 lg:block">
+            <p className="text-xs font-semibold text-slate-500 lg:hidden">
+              Line total
+            </p>
+            <p className="text-sm font-semibold text-teal lg:px-1">
+              {formatCurrency(item.quantity * item.unitPrice)}
+            </p>
+          </div>
           <Button
             variant="danger"
             size="sm"
@@ -92,6 +110,7 @@ export function ServicePicker({
             icon={<Trash2 className="h-4 w-4" />}
             onClick={() => removeItem(index)}
             disabled={items.length === 1}
+            className="w-full lg:w-auto"
           />
         </div>
       ))}
@@ -101,6 +120,7 @@ export function ServicePicker({
         size="sm"
         icon={<Plus className="h-4 w-4" />}
         onClick={addItem}
+        disabled={services.length === 0}
       >
         Add item
       </Button>

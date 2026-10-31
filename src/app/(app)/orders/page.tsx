@@ -74,16 +74,13 @@ export default function OrdersPage() {
           <Select
             className="w-full sm:max-w-[180px]"
             value={status}
-            onChange={(event) =>
-              setStatus(event.target.value as OrderStatus | "All")
-            }
-          >
-            {statuses.map((item) => (
-              <option key={item} value={item}>
-                {item === "All" ? "All statuses" : item}
-              </option>
-            ))}
-          </Select>
+            onChange={(value) => setStatus(value as OrderStatus | "All")}
+            options={statuses.map((item) => ({
+              value: item,
+              label: item === "All" ? "All statuses" : item,
+            }))}
+            aria-label="Filter by status"
+          />
         </div>
         <Link href="/orders/new" className="w-full sm:w-auto">
           <Button icon={<PackagePlus className="h-4 w-4" />} fullWidth className="sm:w-auto">

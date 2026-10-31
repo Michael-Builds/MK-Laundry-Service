@@ -218,14 +218,15 @@ export default function ServicesPage() {
               <Select
                 id="service-category"
                 value={category}
-                onChange={(event) =>
-                  setCategory(event.target.value as Service["category"])
+                onChange={(value) =>
+                  setCategory(value as Service["category"])
                 }
-              >
-                <option value="Garment">Garment</option>
-                <option value="Home">Home</option>
-                <option value="Specialty">Specialty</option>
-              </Select>
+                options={[
+                  { value: "Garment", label: "Garment" },
+                  { value: "Home", label: "Home" },
+                  { value: "Specialty", label: "Specialty" },
+                ]}
+              />
             </Field>
           </div>
           <Checkbox
