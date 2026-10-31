@@ -1,23 +1,18 @@
 "use client";
 
 import { Topbar } from "@/components/layout/Topbar";
-import { useSession } from "@/components/providers/SessionProvider";
 import { useToast } from "@/components/providers/ToastProvider";
-import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { Toggle } from "@/components/ui/Toggle";
 import type { AppSettings } from "@/data/types";
 import { getSettings, saveSettings } from "@/lib/store";
 import { wait } from "@/lib/wait";
-import { UserRound } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { PageLoader } from "@/components/ui/PageLoader";
 
 export default function SettingsPage() {
-  const { user } = useSession();
   const { showToast } = useToast();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [saving, setSaving] = useState(false);
@@ -29,7 +24,7 @@ export default function SettingsPage() {
   if (!settings) {
     return (
       <div>
-        <Topbar title="Settings" eyebrow="Preferences" />
+        <Topbar title="Settings" eyebrow="Business" />
         <PageLoader label="Loading settings..." compact />
       </div>
     );
@@ -49,33 +44,24 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <Topbar title="Settings" eyebrow="Preferences" />
+      <Topbar
+        title="Settings"
+        eyebrow="Business"
+        actions={
+          <Button onClick={onSave} loading={saving} loadingText="Saving..." size="sm">
+            Save settings
+          </Button>
+        }
+      />
 
-      <div className="w-full space-y-5">
-        <section className="rounded-2xl border border-line bg-white p-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Avatar name={user?.fullName || "Staff"} />
-              <div>
-                <h2 className="text-lg font-semibold text-ink">Your profile</h2>
-                <p className="text-sm text-slate-500">
-                  Update contact details or change your password.
-                </p>
-              </div>
-            </div>
-            <Link href="/settings/profile">
-              <Button
-                variant="secondary"
-                icon={<UserRound className="h-4 w-4" />}
-              >
-                Open profile
-              </Button>
-            </Link>
+      <div className="grid w-full gap-5 xl:grid-cols-2">
+        <section className="rounded-2xl border border-line bg-white p-5 sm:p-6">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-ink">Business</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Shop identity and currency shown on invoices.
+            </p>
           </div>
-        </section>
-
-        <section className="rounded-2xl border border-line bg-white p-6">
-          <h2 className="mb-4 text-lg font-semibold text-ink">Business</h2>
           <div className="space-y-4">
             <Field label="Business name" htmlFor="business-name">
               <Input
@@ -107,8 +93,13 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        <section className="space-y-5 rounded-2xl border border-line bg-white p-6">
-          <h2 className="text-lg font-semibold text-ink">Operations</h2>
+        <section className="space-y-5 rounded-2xl border border-line bg-white p-5 sm:p-6">
+          <div>
+            <h2 className="text-lg font-semibold text-ink">Operations</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Desk preferences for day-to-day laundry workflow.
+            </p>
+          </div>
           <Toggle
             id="notify-ready"
             label="Notify when ready"
@@ -138,12 +129,6 @@ export default function SettingsPage() {
             onChange={(checked) => patch({ lowStockAlerts: checked })}
           />
         </section>
-
-        <div className="flex justify-end">
-          <Button onClick={onSave} loading={saving} loadingText="Saving...">
-            Save settings
-          </Button>
-        </div>
       </div>
     </div>
   );

@@ -8,9 +8,7 @@ import {
   BarChart3,
   ClipboardList,
   LayoutDashboard,
-  Settings,
   Shirt,
-  UserRound,
   Users,
   X,
 } from "lucide-react";
@@ -25,8 +23,6 @@ const icons = {
   "/services": Shirt,
   "/employees": Users,
   "/reports": BarChart3,
-  "/settings/profile": UserRound,
-  "/settings": Settings,
 } as const;
 
 export function Sidebar() {
@@ -91,31 +87,15 @@ export function Sidebar() {
           </button>
         </div>
 
-        <Link
-          href="/settings/profile"
-          onClick={closeNav}
-          className="mb-6 flex items-center gap-3 rounded-xl bg-white/5 px-3 py-3 transition hover:bg-white/10"
-        >
-          <Avatar name={user.fullName} />
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-white">
-              {user.fullName}
-            </p>
-            <p className="truncate text-xs text-slate-400">{user.role}</p>
-          </div>
-        </Link>
-
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
           {items.map((item) => {
             const Icon = icons[item.href as keyof typeof icons] ?? ClipboardList;
             const active =
               pathname === item.href ||
-              (item.href === "/settings" && pathname === "/settings") ||
-              (item.href === "/settings/profile" &&
-                pathname.startsWith("/settings/profile")) ||
-              (item.href !== "/orders/new" &&
-                item.href === "/orders" &&
-                pathname.startsWith("/orders/"));
+              (item.href === "/orders" &&
+                pathname.startsWith("/orders/") &&
+                pathname !== "/orders/new") ||
+              (item.href === "/orders" && pathname === "/orders");
 
             return (
               <Link
@@ -141,6 +121,18 @@ export function Sidebar() {
             );
           })}
         </nav>
+
+        <div className="mt-4 border-t border-white/10 pt-4">
+          <div className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-3">
+            <Avatar name={user.fullName} />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-white">
+                {user.fullName}
+              </p>
+              <p className="truncate text-xs text-slate-400">{user.role}</p>
+            </div>
+          </div>
+        </div>
       </aside>
     </>
   );

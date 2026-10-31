@@ -22,3 +22,4 @@ export { Spinner } from "./Spinner";
 export { PageLoader, ScreenLoader } from "./PageLoader";
 export { SearchInput } from "./SearchInput";
 export { DateInput } from "./DateInput";
+export { Toolbar } from "./Toolbar";

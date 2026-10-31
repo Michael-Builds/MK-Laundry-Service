@@ -49,14 +49,12 @@ export default function DashboardPage() {
   const barData = useMemo(() => buildDailyBarData(orders), [orders]);
   const pieData = useMemo(() => buildStatusPieData(orders), [orders]);
 
-  const recent = useMemo(
+  const allOrders = useMemo(
     () =>
-      [...orders]
-        .sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        )
-        .slice(0, 5),
+      [...orders].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      ),
     [orders],
   );
 
@@ -71,11 +69,33 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <Topbar title="Dashboard" eyebrow="Overview" />
+      <Topbar
+        title="Dashboard"
+        eyebrow="Overview"
+        actions={
+          <Link href="/orders/new">
+            <Button size="sm" icon={<PackagePlus className="h-4 w-4" />}>
+              New order
+            </Button>
+          </Link>
+        }
+      />
 
-      <p className="mb-6 text-sm text-slate-500">
-        Welcome back, {user?.fullName}. Here is today&apos;s laundry floor.
-      </p>
+      <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-line bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <div>
+          <p className="text-lg font-semibold text-ink">
+            Welcome back, {user?.fullName}
+          </p>
+          <p className="mt-1 text-sm text-slate-500">
+            Live view of every ticket on the floor - filter further on Orders if you need it.
+          </p>
+        </div>
+        <Link href="/orders">
+          <Button variant="secondary" size="sm">
+            Open orders
+          </Button>
+        </Link>
+      </div>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
@@ -90,28 +110,35 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="mb-6 grid gap-4 xl:grid-cols-2">
-        <OrdersBarChart data={barData} />
-        <StatusPieChart data={pieData} />
-      </div>
+      <section className="mb-6">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-ink">Insights</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Trends for managers - secondary to live floor work.
+          </p>
+        </div>
+        <div className="grid gap-4 xl:grid-cols-2">
+          <OrdersBarChart data={barData} />
+          <StatusPieChart data={pieData} />
+        </div>
+      </section>
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-ink">Recent orders</h2>
-        <div className="flex gap-2">
+      <section>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-ink">Orders</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              All statuses in one place, newest first.
+            </p>
+          </div>
           <Link href="/orders">
             <Button variant="ghost" size="sm">
-              View all
-            </Button>
-          </Link>
-          <Link href="/orders/new">
-            <Button size="sm" icon={<PackagePlus className="h-4 w-4" />}>
-              New order
+              Manage orders
             </Button>
           </Link>
         </div>
-      </div>
-
-      <OrderTable orders={recent} />
+        <OrderTable orders={allOrders} />
+      </section>
     </div>
   );
 }

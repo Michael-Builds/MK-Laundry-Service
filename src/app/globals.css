@@ -47,6 +47,22 @@ body {
   }
 }
 
+@keyframes notify-blink {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.25;
+    transform: scale(0.85);
+  }
+}
+
+.notify-blink {
+  animation: notify-blink 1.2s ease-in-out infinite;
+}
+
 @media print {
   .no-print {
     display: none !important;

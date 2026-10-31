@@ -156,13 +156,19 @@ export default function ServicesPage() {
 
   return (
     <div>
-      <Topbar title="Services" eyebrow="Catalog" />
-
-      <div className="mb-5 flex justify-end">
-        <Button icon={<Plus className="h-4 w-4" />} onClick={() => setOpen(true)}>
-          Add service
-        </Button>
-      </div>
+      <Topbar
+        title="Services"
+        eyebrow="Catalog"
+        actions={
+          <Button
+            size="sm"
+            icon={<Plus className="h-4 w-4" />}
+            onClick={() => setOpen(true)}
+          >
+            Add service
+          </Button>
+        }
+      />
 
       <DataTable
         data={services}

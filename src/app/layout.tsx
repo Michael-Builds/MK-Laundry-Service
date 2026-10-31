@@ -1,3 +1,4 @@
+import { OfflineProvider } from "@/components/providers/OfflineProvider";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ToastProvider } from "@/components/providers/ToastProvider";
 import type { Metadata } from "next";
@@ -24,7 +25,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${figtree.variable} font-sans antialiased`}>
         <SessionProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <OfflineProvider>{children}</OfflineProvider>
+          </ToastProvider>
         </SessionProvider>
       </body>
     </html>

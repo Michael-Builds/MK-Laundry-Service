@@ -9,6 +9,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
 import { DateInput } from "@/components/ui/DateInput";
 import { Field } from "@/components/ui/Field";
+import { Toolbar } from "@/components/ui/Toolbar";
 import { formatCurrency } from "@/data/orders";
 import type { Order } from "@/data/types";
 import { PageLoader } from "@/components/ui/PageLoader";
@@ -126,36 +127,35 @@ export default function ReportsPage() {
     <div>
       <Topbar title="Reports" eyebrow="Insights" />
 
-      <div className="mb-6 rounded-2xl border border-line bg-white p-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="grid w-full gap-3 sm:grid-cols-2 lg:max-w-xl">
-            <Field label="From" htmlFor="from">
-              <DateInput
-                id="from"
-                value={from}
-                onChange={(event) => setFrom(event.target.value)}
-              />
-            </Field>
-            <Field label="To" htmlFor="to">
-              <DateInput
-                id="to"
-                value={to}
-                onChange={(event) => setTo(event.target.value)}
-              />
-            </Field>
-          </div>
+      <Toolbar
+        actions={
           <Button
             variant="secondary"
+            size="sm"
             icon={<Download className="h-4 w-4" />}
             onClick={() => setConfirmExport(true)}
-            className="w-full shrink-0 lg:w-auto"
           >
             Export CSV
           </Button>
-        </div>
-      </div>
+        }
+      >
+        <Field label="From" htmlFor="from" className="w-full sm:max-w-[180px]">
+          <DateInput
+            id="from"
+            value={from}
+            onChange={(event) => setFrom(event.target.value)}
+          />
+        </Field>
+        <Field label="To" htmlFor="to" className="w-full sm:max-w-[180px]">
+          <DateInput
+            id="to"
+            value={to}
+            onChange={(event) => setTo(event.target.value)}
+          />
+        </Field>
+      </Toolbar>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Orders in range" value={filtered.length} />
         <StatCard label="Completed" value={completed.length} accent />
         <StatCard label="Cancelled" value={cancelled} />
@@ -164,6 +164,13 @@ export default function ReportsPage() {
           value={formatCurrency(revenue)}
           icon={<Wallet className="h-4 w-4" />}
         />
+      </div>
+
+      <div className="mb-3">
+        <h2 className="text-lg font-semibold text-ink">Order breakdown</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Filtered results for the selected date range.
+        </p>
       </div>
 
       <DataTable

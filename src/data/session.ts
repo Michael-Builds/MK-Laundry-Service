@@ -105,16 +105,6 @@ export function navItemsForRole(role: Role) {
       label: "Reports",
       roles: ["Administrator", "Manager"] as Role[],
     },
-    {
-      href: "/settings/profile",
-      label: "Profile",
-      roles: ["Administrator", "Manager", "Employee"] as Role[],
-    },
-    {
-      href: "/settings",
-      label: "Settings",
-      roles: ["Administrator"] as Role[],
-    },
   ];
 
   return all.filter((item) => item.roles.includes(role));

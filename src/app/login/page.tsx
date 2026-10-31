@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("admin");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showDemoHint, setShowDemoHint] = useState(false);
 
   useEffect(() => {
     if (!loading && user) router.replace("/dashboard");
@@ -46,13 +47,6 @@ export default function LoginPage() {
     <AuthShell
       title="MK Laundry Service"
       subtitle="Sign in to the staff operations console."
-      footer={
-        <p className="text-center text-xs leading-relaxed text-slate-500">
-          Demo: <span className="font-semibold text-ink">admin / admin</span>
-          <br />
-          Also try kwame/manager or efua/staff
-        </p>
-      }
     >
       <form className="space-y-4" onSubmit={onSubmit}>
         <Field label="Username" htmlFor="username" required>
@@ -75,7 +69,14 @@ export default function LoginPage() {
             disabled={submitting}
           />
         </Field>
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-3">
+          <button
+            type="button"
+            className="text-xs font-semibold text-slate-500 hover:text-teal"
+            onClick={() => setShowDemoHint((current) => !current)}
+          >
+            {showDemoHint ? "Hide demo access" : "Need demo access?"}
+          </button>
           <Link
             href="/forgot-password"
             className="text-sm font-semibold text-teal hover:underline"
@@ -83,6 +84,13 @@ export default function LoginPage() {
             Forgot password?
           </Link>
         </div>
+        {showDemoHint ? (
+          <div className="rounded-xl border border-line bg-mist px-3 py-3 text-xs leading-relaxed text-slate-600">
+            Use <span className="font-semibold text-ink">admin / admin</span>,
+            or try <span className="font-semibold text-ink">kwame / manager</span>{" "}
+            and <span className="font-semibold text-ink">efua / staff</span>.
+          </div>
+        ) : null}
         {error ? (
           <p className="text-sm font-medium text-[var(--danger)]">{error}</p>
         ) : null}

@@ -89,10 +89,11 @@ export function OrderTable({ orders }: { orders: Order[] }) {
       emptyDescription="Try adjusting your filters or create a new order."
       emptyAction={
         <Link href="/orders/new">
-          <Button>New order</Button>
+          <Button size="sm">New order</Button>
         </Link>
       }
       pageSize={8}
+      showPagination={orders.length > 8}
     />
   );
 }

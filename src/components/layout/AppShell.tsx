@@ -9,7 +9,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <NavProvider>
       <div className="min-h-screen">
         <Sidebar />
-        <main className="min-h-screen px-4 py-6 sm:px-6 md:ml-[248px] md:px-8 lg:px-10 lg:py-8">
+        <main className="min-h-screen px-4 pb-6 sm:px-6 md:ml-[248px] md:px-8 lg:px-10 lg:pb-8">
           {children}
         </main>
       </div>

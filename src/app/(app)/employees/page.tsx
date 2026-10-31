@@ -128,8 +128,8 @@ export default function EmployeesPage() {
         hideOnMobile: true,
         cell: (employee) => (
           <div>
-            <p>{employee.phone || "—"}</p>
-            <p className="text-xs text-slate-500">{employee.email || "—"}</p>
+            <p>{employee.phone || "-"}</p>
+            <p className="text-xs text-slate-500">{employee.email || "-"}</p>
           </div>
         ),
       },
@@ -179,13 +179,19 @@ export default function EmployeesPage() {
 
   return (
     <div>
-      <Topbar title="Employees" eyebrow="Team" />
-
-      <div className="mb-5 flex justify-end">
-        <Button icon={<UserPlus className="h-4 w-4" />} onClick={() => setOpen(true)}>
-          Add employee
-        </Button>
-      </div>
+      <Topbar
+        title="Employees"
+        eyebrow="Team"
+        actions={
+          <Button
+            size="sm"
+            icon={<UserPlus className="h-4 w-4" />}
+            onClick={() => setOpen(true)}
+          >
+            Add employee
+          </Button>
+        }
+      />
 
       <DataTable
         data={employees}
