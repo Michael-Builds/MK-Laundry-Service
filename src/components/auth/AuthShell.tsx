@@ -16,7 +16,7 @@ export function AuthShell({
       <div className="pointer-events-none absolute -top-24 right-[12%] h-64 w-64 rounded-full border border-teal/15" />
       <div className="pointer-events-none absolute -bottom-28 left-[8%] h-72 w-72 rounded-full border border-teal/10" />
 
-      <div className="relative z-10 w-full max-w-[440px] rounded-3xl border border-line bg-white p-8">
+      <div className="relative z-10 w-full max-w-[440px] rounded-3xl border border-line bg-white p-5 sm:p-8">
         <div className="mb-2 flex h-14 w-14 items-center justify-center rounded-2xl border border-teal bg-teal text-lg font-bold text-white">
           MK
         </div>

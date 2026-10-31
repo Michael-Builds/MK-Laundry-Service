@@ -91,11 +91,6 @@ export function navItemsForRole(role: Role) {
       roles: ["Administrator", "Manager", "Employee"] as Role[],
     },
     {
-      href: "/orders/new",
-      label: "New order",
-      roles: ["Administrator", "Manager", "Employee"] as Role[],
-    },
-    {
       href: "/services",
       label: "Services",
       roles: ["Administrator", "Manager"] as Role[],

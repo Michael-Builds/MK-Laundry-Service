@@ -92,6 +92,7 @@ export default function ReportsPage() {
       {
         id: "payment",
         header: "Payment",
+        hideOnMobile: true,
         cell: (order) => order.payment,
       },
       {
@@ -125,28 +126,33 @@ export default function ReportsPage() {
     <div>
       <Topbar title="Reports" eyebrow="Insights" />
 
-      <div className="mb-6 flex flex-wrap items-end gap-3 rounded-2xl border border-line bg-white p-4">
-        <Field label="From" htmlFor="from" className="min-w-[160px]">
-          <DateInput
-            id="from"
-            value={from}
-            onChange={(event) => setFrom(event.target.value)}
-          />
-        </Field>
-        <Field label="To" htmlFor="to" className="min-w-[160px]">
-          <DateInput
-            id="to"
-            value={to}
-            onChange={(event) => setTo(event.target.value)}
-          />
-        </Field>
-        <Button
-          variant="secondary"
-          icon={<Download className="h-4 w-4" />}
-          onClick={() => setConfirmExport(true)}
-        >
-          Export CSV
-        </Button>
+      <div className="mb-6 rounded-2xl border border-line bg-white p-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="grid w-full gap-3 sm:grid-cols-2 lg:max-w-xl">
+            <Field label="From" htmlFor="from">
+              <DateInput
+                id="from"
+                value={from}
+                onChange={(event) => setFrom(event.target.value)}
+              />
+            </Field>
+            <Field label="To" htmlFor="to">
+              <DateInput
+                id="to"
+                value={to}
+                onChange={(event) => setTo(event.target.value)}
+              />
+            </Field>
+          </div>
+          <Button
+            variant="secondary"
+            icon={<Download className="h-4 w-4" />}
+            onClick={() => setConfirmExport(true)}
+            className="w-full shrink-0 lg:w-auto"
+          >
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

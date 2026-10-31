@@ -51,7 +51,7 @@ export default function SettingsPage() {
     <div>
       <Topbar title="Settings" eyebrow="Preferences" />
 
-      <div className="max-w-2xl space-y-5">
+      <div className="w-full space-y-5">
         <section className="rounded-2xl border border-line bg-white p-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -86,7 +86,7 @@ export default function SettingsPage() {
                 }
               />
             </Field>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Field label="Currency" htmlFor="currency">
                 <Input
                   id="currency"

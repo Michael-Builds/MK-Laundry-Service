@@ -33,7 +33,7 @@ export function Modal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-0 animate-fade-in sm:items-center sm:p-4">
       <button
         type="button"
         aria-label="Close dialog"
@@ -44,7 +44,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         className={cn(
-          "relative z-10 w-full max-w-lg rounded-2xl border border-line bg-white p-5 animate-slide-in",
+          "relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-2xl border border-line bg-white p-5 animate-slide-in sm:max-w-lg sm:rounded-2xl",
           className,
         )}
       >

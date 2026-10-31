@@ -63,15 +63,16 @@ export default function OrdersPage() {
     <div>
       <Topbar title="Orders" eyebrow="Operations" />
 
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-1 flex-wrap items-center gap-3">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex w-full flex-col gap-3 sm:flex-1 sm:flex-row sm:flex-wrap sm:items-center">
           <SearchInput
+            className="max-w-none sm:max-w-sm"
             placeholder="Search customer, phone, or order ID"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
           <Select
-            className="max-w-[180px]"
+            className="w-full sm:max-w-[180px]"
             value={status}
             onChange={(event) =>
               setStatus(event.target.value as OrderStatus | "All")
@@ -84,8 +85,10 @@ export default function OrdersPage() {
             ))}
           </Select>
         </div>
-        <Link href="/orders/new">
-          <Button icon={<PackagePlus className="h-4 w-4" />}>New order</Button>
+        <Link href="/orders/new" className="w-full sm:w-auto">
+          <Button icon={<PackagePlus className="h-4 w-4" />} fullWidth className="sm:w-auto">
+            New order
+          </Button>
         </Link>
       </div>
 

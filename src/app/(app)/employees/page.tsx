@@ -125,6 +125,7 @@ export default function EmployeesPage() {
       {
         id: "contact",
         header: "Contact",
+        hideOnMobile: true,
         cell: (employee) => (
           <div>
             <p>{employee.phone || "—"}</p>
@@ -224,7 +225,7 @@ export default function EmployeesPage() {
               required
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Username" htmlFor="emp-username" required>
               <Input
                 id="emp-username"
@@ -253,7 +254,7 @@ export default function EmployeesPage() {
               <option value="Administrator">Administrator</option>
             </Select>
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Phone" htmlFor="emp-phone">
               <Input
                 id="emp-phone"

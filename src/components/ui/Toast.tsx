@@ -22,7 +22,7 @@ export function Toast({
   return (
     <div
       className={cn(
-        "fixed right-6 top-6 z-[60] flex max-w-sm items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium text-white animate-slide-in",
+        "fixed top-4 right-4 left-4 z-[60] flex max-w-sm items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium text-white animate-slide-in sm:left-auto sm:right-6 sm:top-6",
         tone === "success" && "border-teal-dark bg-teal",
         tone === "info" && "border-ink-soft bg-ink",
         tone === "error" && "border-red-800 bg-[var(--danger)]",

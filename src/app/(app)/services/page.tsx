@@ -99,6 +99,7 @@ export default function ServicesPage() {
       {
         id: "category",
         header: "Category",
+        hideOnMobile: true,
         cell: (service) => service.category,
       },
       {
@@ -201,7 +202,7 @@ export default function ServicesPage() {
               required
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Unit price" htmlFor="service-price" required>
               <Input
                 id="service-price"

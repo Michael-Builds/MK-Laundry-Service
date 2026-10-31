@@ -85,14 +85,14 @@ export default function OrderDetailPage() {
     <div>
       <Topbar title={order.id} eyebrow="Order detail" />
 
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 no-print">
+      <div className="mb-5 flex flex-col gap-3 no-print sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <Link href="/orders">
           <Button variant="ghost" icon={<ArrowLeft className="h-4 w-4" />}>
             Back
           </Button>
         </Link>
-        <div className="flex flex-wrap items-end gap-3">
-          <Field label="Update status" className="min-w-[180px]">
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-end">
+          <Field label="Update status" className="w-full sm:min-w-[180px]">
             <OrderStatusSelect
               value={order.status}
               onChange={(status) => {
@@ -105,6 +105,8 @@ export default function OrderDetailPage() {
             variant="secondary"
             icon={<Printer className="h-4 w-4" />}
             onClick={() => window.print()}
+            fullWidth
+            className="sm:w-auto"
           >
             Print invoice
           </Button>

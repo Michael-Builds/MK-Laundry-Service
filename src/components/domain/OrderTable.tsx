@@ -32,11 +32,13 @@ export function OrderTable({ orders }: { orders: Order[] }) {
       {
         id: "delivery",
         header: "Delivery",
+        hideOnMobile: true,
         cell: (order) => order.deliveryDate,
       },
       {
         id: "payment",
         header: "Payment",
+        hideOnMobile: true,
         cell: (order) => order.payment,
       },
       {
@@ -59,13 +61,16 @@ export function OrderTable({ orders }: { orders: Order[] }) {
         headerClassName: "text-right",
         className: "text-right",
         cell: (order) => (
-          <Link href={`/orders/${order.id}`} onClick={(event) => event.stopPropagation()}>
+          <Link
+            href={`/orders/${order.id}`}
+            onClick={(event) => event.stopPropagation()}
+          >
             <Button
               variant="secondary"
               size="sm"
               icon={<Eye className="h-3.5 w-3.5" />}
             >
-              View
+              <span className="hidden sm:inline">View</span>
             </Button>
           </Link>
         ),
@@ -87,6 +92,7 @@ export function OrderTable({ orders }: { orders: Order[] }) {
           <Button>New order</Button>
         </Link>
       }
+      pageSize={8}
     />
   );
 }

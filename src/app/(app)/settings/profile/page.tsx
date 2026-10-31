@@ -40,7 +40,7 @@ export default function SettingsProfilePage() {
         </div>
       </div>
 
-      <div className="grid max-w-4xl gap-5">
+      <div className="grid w-full gap-5 xl:grid-cols-2">
         <UpdateProfileForm />
         <ChangePasswordForm />
       </div>

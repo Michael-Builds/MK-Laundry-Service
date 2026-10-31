@@ -88,9 +88,9 @@ export default function NewOrderPage() {
 
       <form
         onSubmit={onSubmit}
-        className="max-w-3xl space-y-5 rounded-2xl border border-line bg-white p-6"
+        className="w-full space-y-5 rounded-2xl border border-line bg-white p-4 sm:p-6"
       >
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Field label="Customer name" htmlFor="name" required>
             <Input
               id="name"
