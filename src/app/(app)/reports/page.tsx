@@ -14,21 +14,25 @@ import { formatCurrency } from "@/data/orders";
 import type { Order } from "@/data/types";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { useBootLoading } from "@/hooks/useBootLoading";
-import { getOrders } from "@/lib/store";
-import { wait } from "@/lib/wait";
+import { api } from "@/lib/api-client";
 import { ClipboardList, Download, Wallet } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 export default function ReportsPage() {
   const { showToast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [from, setFrom] = useState("2026-10-01");
-  const [to, setTo] = useState("2026-11-30");
+  const [from, setFrom] = useState(() => {
+    const date = new Date();
+    date.setDate(1);
+    return date.toISOString().slice(0, 10);
+  });
+  const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10));
   const [confirmExport, setConfirmExport] = useState(false);
   const [exporting, setExporting] = useState(false);
 
-  const boot = useCallback(() => {
-    setOrders(getOrders());
+  const boot = useCallback(async () => {
+    const data = await api<{ orders: Order[] }>("/api/orders");
+    setOrders(data.orders);
   }, []);
   const ready = useBootLoading(boot);
 
@@ -45,11 +49,10 @@ export default function ReportsPage() {
 
   const exportCsv = async () => {
     setExporting(true);
-    await wait();
     const rows = [
       ["Order ID", "Customer", "Phone", "Delivery", "Payment", "Status", "Total"],
       ...filtered.map((order) => [
-        order.id,
+        order.code,
         order.customerName,
         order.phone,
         order.deliveryDate,
@@ -77,7 +80,7 @@ export default function ReportsPage() {
         id: "order",
         header: "Order",
         cell: (order) => (
-          <span className="font-semibold text-ink">{order.id}</span>
+          <span className="font-semibold text-ink">{order.code}</span>
         ),
       },
       {

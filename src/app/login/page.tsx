@@ -7,7 +7,6 @@ import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import { ScreenLoader } from "@/components/ui/PageLoader";
 import { PasswordInput } from "@/components/ui/PasswordInput";
-import { wait } from "@/lib/wait";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
@@ -15,11 +14,10 @@ import { FormEvent, useEffect, useState } from "react";
 export default function LoginPage() {
   const { user, loading, login } = useSession();
   const router = useRouter();
-  const [username, setUsername] = useState("admin");
-  const [password, setPassword] = useState("admin");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [showDemoHint, setShowDemoHint] = useState(false);
 
   useEffect(() => {
     if (!loading && user) router.replace("/dashboard");
@@ -29,8 +27,7 @@ export default function LoginPage() {
     event.preventDefault();
     setSubmitting(true);
     setError("");
-    await wait();
-    const result = login(username.trim(), password);
+    const result = await login(username.trim(), password);
     if (result) {
       setError(result);
       setSubmitting(false);
@@ -69,14 +66,7 @@ export default function LoginPage() {
             disabled={submitting}
           />
         </Field>
-        <div className="flex items-center justify-between gap-3">
-          <button
-            type="button"
-            className="text-xs font-semibold text-slate-500 hover:text-teal"
-            onClick={() => setShowDemoHint((current) => !current)}
-          >
-            {showDemoHint ? "Hide demo access" : "Need demo access?"}
-          </button>
+        <div className="flex justify-end">
           <Link
             href="/forgot-password"
             className="text-sm font-semibold text-teal hover:underline"
@@ -84,13 +74,6 @@ export default function LoginPage() {
             Forgot password?
           </Link>
         </div>
-        {showDemoHint ? (
-          <div className="rounded-xl border border-line bg-mist px-3 py-3 text-xs leading-relaxed text-slate-600">
-            Use <span className="font-semibold text-ink">admin / admin</span>,
-            or try <span className="font-semibold text-ink">kwame / manager</span>{" "}
-            and <span className="font-semibold text-ink">efua / staff</span>.
-          </div>
-        ) : null}
         {error ? (
           <p className="text-sm font-medium text-[var(--danger)]">{error}</p>
         ) : null}

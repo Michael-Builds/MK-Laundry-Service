@@ -9,10 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Field } from "@/components/ui/Field";
 import { PageLoader } from "@/components/ui/PageLoader";
-import { employees } from "@/data/employees";
 import type { Order, OrderStatus } from "@/data/types";
-import { getOrders, updateOrderStatus } from "@/lib/store";
-import { wait } from "@/lib/wait";
+import { ApiError, api } from "@/lib/api-client";
 import { ArrowLeft, Printer } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -30,11 +28,16 @@ export default function OrderDetailPage() {
     let alive = true;
     const load = async () => {
       setLoading(true);
-      const found = getOrders().find((item) => item.id === params.id) ?? null;
-      await wait(300);
-      if (!alive) return;
-      setOrder(found);
-      setLoading(false);
+      try {
+        const data = await api<{ order: Order }>(`/api/orders/${params.id}`);
+        if (!alive) return;
+        setOrder(data.order);
+      } catch {
+        if (!alive) return;
+        setOrder(null);
+      } finally {
+        if (alive) setLoading(false);
+      }
     };
     void load();
     return () => {
@@ -65,27 +68,31 @@ export default function OrderDetailPage() {
     );
   }
 
-  const teller =
-    employees.find((employee) => employee.id === order.tellerId)?.fullName ||
-    "Staff";
-
   const applyStatus = async () => {
     if (!pendingStatus) return;
     setUpdating(true);
-    await wait();
-    const updated = updateOrderStatus(order.id, pendingStatus);
-    setUpdating(false);
-    setPendingStatus(null);
-    if (updated) {
-      setOrder(updated);
+    try {
+      const data = await api<{ order: Order }>(`/api/orders/${order.id}`, {
+        method: "PATCH",
+        json: { status: pendingStatus },
+      });
+      setOrder(data.order);
       showToast(`Status updated to ${pendingStatus}`, "success");
+      setPendingStatus(null);
+    } catch (error) {
+      showToast(
+        error instanceof ApiError ? error.message : "Could not update status",
+        "error",
+      );
+    } finally {
+      setUpdating(false);
     }
   };
 
   return (
     <div>
       <Topbar
-        title={order.id}
+        title={order.code}
         eyebrow="Order detail"
         actions={
           <Link href="/orders">
@@ -97,7 +104,10 @@ export default function OrderDetailPage() {
       />
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
-        <InvoicePreview order={order} tellerName={teller} />
+        <InvoicePreview
+          order={order}
+          tellerName={order.tellerName || "Staff"}
+        />
 
         <aside className="no-print xl:sticky xl:top-6 xl:self-start">
           <div className="space-y-4 rounded-2xl border border-line bg-white p-4 sm:p-5">
@@ -123,23 +133,12 @@ export default function OrderDetailPage() {
 
             <Button
               variant="secondary"
+              fullWidth
               icon={<Printer className="h-4 w-4" />}
               onClick={() => window.print()}
-              fullWidth
             >
               Print invoice
             </Button>
-
-            <div className="rounded-xl border border-line bg-mist px-3 py-3 text-sm text-slate-600">
-              <p>
-                <span className="font-semibold text-ink">Customer:</span>{" "}
-                {order.customerName}
-              </p>
-              <p className="mt-1">
-                <span className="font-semibold text-ink">Delivery:</span>{" "}
-                {order.deliveryDate}
-              </p>
-            </div>
           </div>
         </aside>
       </div>
@@ -151,11 +150,11 @@ export default function OrderDetailPage() {
         title="Update order status?"
         description={
           pendingStatus
-            ? `Change ${order.id} from ${order.status} to ${pendingStatus}?`
-            : null
+            ? `Change this order from ${order.status} to ${pendingStatus}.`
+            : undefined
         }
         confirmLabel="Update status"
-        tone={pendingStatus === "Cancelled" ? "danger" : "primary"}
+        tone="primary"
         loading={updating}
       />
     </div>

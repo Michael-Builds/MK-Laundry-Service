@@ -9,7 +9,7 @@ import { Select } from "@/components/ui/Select";
 import { Toolbar } from "@/components/ui/Toolbar";
 import type { Order, OrderStatus } from "@/data/types";
 import { useBootLoading } from "@/hooks/useBootLoading";
-import { getOrders } from "@/lib/store";
+import { api } from "@/lib/api-client";
 import { PackagePlus } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -31,8 +31,9 @@ function OrdersPageContent() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<OrderStatus | "All">("All");
 
-  const boot = useCallback(() => {
-    setOrders(getOrders());
+  const boot = useCallback(async () => {
+    const data = await api<{ orders: Order[] }>("/api/orders");
+    setOrders(data.orders);
   }, []);
   const ready = useBootLoading(boot);
 
@@ -49,15 +50,12 @@ function OrdersPageContent() {
       .filter((order) => {
         if (!q) return true;
         return (
+          order.code.toLowerCase().includes(q) ||
           order.id.toLowerCase().includes(q) ||
           order.customerName.toLowerCase().includes(q) ||
           order.phone.includes(q)
         );
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
+      });
   }, [orders, query, status]);
 
   if (!ready) {

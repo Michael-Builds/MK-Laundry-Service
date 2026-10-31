@@ -10,13 +10,12 @@ import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { Select } from "@/components/ui/Select";
 import { formatCurrency } from "@/data/orders";
 import type { Service } from "@/data/types";
-import { PageLoader } from "@/components/ui/PageLoader";
 import { useBootLoading } from "@/hooks/useBootLoading";
-import { getServices, saveServices } from "@/lib/store";
-import { wait } from "@/lib/wait";
+import { ApiError, api } from "@/lib/api-client";
 import { Plus, Shirt } from "lucide-react";
 import { FormEvent, useCallback, useMemo, useState } from "react";
 
@@ -32,54 +31,71 @@ export default function ServicesPage() {
   const [creating, setCreating] = useState(false);
   const [toggling, setToggling] = useState(false);
 
-  const boot = useCallback(() => {
-    setServices(getServices());
+  const boot = useCallback(async () => {
+    const data = await api<{ services: Service[] }>("/api/services");
+    setServices(data.services);
   }, []);
   const ready = useBootLoading(boot);
-
-  const persist = (next: Service[]) => {
-    setServices(next);
-    saveServices(next);
-  };
 
   const onCreate = async (event: FormEvent) => {
     event.preventDefault();
     setCreating(true);
-    await wait();
-    const next: Service = {
-      id: `svc-${Date.now()}`,
-      name: name.trim(),
-      unitPrice: Number(unitPrice) || 0,
-      category,
-      active,
-    };
-    persist([next, ...services]);
-    setCreating(false);
-    setOpen(false);
-    setName("");
-    setUnitPrice("10");
-    setCategory("Garment");
-    setActive(true);
-    showToast("Service added", "success");
+    try {
+      const data = await api<{ service: Service }>("/api/services", {
+        method: "POST",
+        json: {
+          name: name.trim(),
+          unitPrice: Number(unitPrice) || 0,
+          category,
+          active,
+        },
+      });
+      setServices((current) => [data.service, ...current]);
+      setOpen(false);
+      setName("");
+      setUnitPrice("10");
+      setCategory("Garment");
+      setActive(true);
+      showToast("Service added", "success");
+    } catch (error) {
+      showToast(
+        error instanceof ApiError ? error.message : "Could not add service",
+        "error",
+      );
+    } finally {
+      setCreating(false);
+    }
   };
 
   const confirmToggle = async () => {
     if (!pendingToggle) return;
     setToggling(true);
-    await wait();
-    persist(
-      services.map((service) =>
-        service.id === pendingToggle.id
-          ? { ...service, active: !service.active }
-          : service,
-      ),
-    );
-    setToggling(false);
-    showToast(
-      pendingToggle.active ? "Service deactivated" : "Service activated",
-      "success",
-    );
-    setPendingToggle(null);
+    try {
+      const data = await api<{ service: Service }>(
+        `/api/services/${pendingToggle.id}`,
+        {
+          method: "PATCH",
+          json: { active: !pendingToggle.active },
+        },
+      );
+      setServices((current) =>
+        current.map((service) =>
+          service.id === data.service.id ? data.service : service,
+        ),
+      );
+      showToast(
+        pendingToggle.active ? "Service deactivated" : "Service activated",
+        "success",
+      );
+      setPendingToggle(null);
+    } catch (error) {
+      showToast(
+        error instanceof ApiError ? error.message : "Could not update service",
+        "error",
+      );
+    } finally {
+      setToggling(false);
+    }
   };
 
   const columns = useMemo<DataTableColumn<Service>[]>(

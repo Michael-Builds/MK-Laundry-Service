@@ -36,10 +36,10 @@ export function AccountMenu() {
 
   if (!user) return null;
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     setConfirmSignOut(false);
     setOpen(false);
-    logout();
+    await logout();
     router.replace("/login");
   };
 

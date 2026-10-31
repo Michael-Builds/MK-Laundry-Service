@@ -7,11 +7,8 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import { PasswordInput } from "@/components/ui/PasswordInput";
-import {
-  updateEmployeePassword,
-  updateEmployeeProfile,
-} from "@/lib/store";
-import { wait } from "@/lib/wait";
+import type { Employee } from "@/data/types";
+import { ApiError, api } from "@/lib/api-client";
 import { FormEvent, useEffect, useState } from "react";
 
 export function UpdateProfileForm() {
@@ -33,20 +30,26 @@ export function UpdateProfileForm() {
   const saveProfile = async () => {
     if (!user) return;
     setSaving(true);
-    await wait();
-    const updated = updateEmployeeProfile(user.id, {
-      fullName: fullName.trim(),
-      phone: phone.trim(),
-      email: email.trim(),
-    });
-    setSaving(false);
-    setConfirmOpen(false);
-    if (!updated) {
-      showToast("Could not update profile", "error");
-      return;
+    try {
+      await api<{ employee: Employee }>(`/api/employees/${user.id}`, {
+        method: "PATCH",
+        json: {
+          fullName: fullName.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
+        },
+      });
+      await refreshUser();
+      showToast("Profile updated", "success");
+      setConfirmOpen(false);
+    } catch (error) {
+      showToast(
+        error instanceof ApiError ? error.message : "Could not update profile",
+        "error",
+      );
+    } finally {
+      setSaving(false);
     }
-    refreshUser();
-    showToast("Profile updated", "success");
   };
 
   const onSubmit = (event: FormEvent) => {
@@ -131,24 +134,25 @@ export function ChangePasswordForm() {
   const applyPasswordChange = async () => {
     if (!user) return;
     setSaving(true);
-    await wait();
-    const result = updateEmployeePassword(
-      user.id,
-      currentPassword,
-      nextPassword,
-    );
-    setSaving(false);
-    setConfirmOpen(false);
-    if (result) {
-      setError(result);
-      showToast(result, "error");
-      return;
+    try {
+      await api(`/api/employees/${user.id}/password`, {
+        method: "PATCH",
+        json: { currentPassword, nextPassword },
+      });
+      setCurrentPassword("");
+      setNextPassword("");
+      setConfirmPassword("");
+      setError("");
+      setConfirmOpen(false);
+      showToast("Password changed", "success");
+    } catch (error) {
+      const message =
+        error instanceof ApiError ? error.message : "Could not change password";
+      setError(message);
+      showToast(message, "error");
+    } finally {
+      setSaving(false);
     }
-    setCurrentPassword("");
-    setNextPassword("");
-    setConfirmPassword("");
-    setError("");
-    showToast("Password changed", "success");
   };
 
   const onSubmit = (event: FormEvent) => {
@@ -170,7 +174,7 @@ export function ChangePasswordForm() {
         <div>
           <h2 className="text-lg font-semibold text-ink">Change password</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Use a password only you know. Demo storage is session-only for now.
+            Use a password only you know.
           </p>
         </div>
         <Field label="Current password" htmlFor="current-password" required>

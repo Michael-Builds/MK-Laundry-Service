@@ -4,8 +4,7 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
-import { requestPasswordReset } from "@/lib/store";
-import { wait } from "@/lib/wait";
+import { ApiError, api } from "@/lib/api-client";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 
@@ -19,23 +18,36 @@ export default function ForgotPasswordPage() {
     event.preventDefault();
     setError("");
     setSubmitting(true);
-    await wait();
-    const result = requestPasswordReset(username.trim());
-    setSubmitting(false);
-    if (!result) {
-      setError("No active staff account found for that username.");
+    try {
+      const result = await api<{
+        ok: boolean;
+        token?: string;
+        username?: string;
+      }>("/api/auth/forgot-password", {
+        method: "POST",
+        json: { username: username.trim() },
+      });
+
+      if (result.token && result.username) {
+        setResetPath(
+          `/reset-password?username=${encodeURIComponent(result.username)}&token=${encodeURIComponent(result.token)}`,
+        );
+      } else {
+        setResetPath(null);
+        setError("If that account exists, a reset link will be available.");
+      }
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not start reset.");
       setResetPath(null);
-      return;
+    } finally {
+      setSubmitting(false);
     }
-    setResetPath(
-      `/reset-password?username=${encodeURIComponent(result.username)}&token=${encodeURIComponent(result.token)}`,
-    );
   };
 
   return (
     <AuthShell
       title="Forgot password"
-      subtitle="Enter your staff username. In this demo we show a reset link instead of sending email."
+      subtitle="Enter your staff username to generate a reset link."
       footer={
         <p className="text-center text-sm text-slate-500">
           Remembered it?{" "}

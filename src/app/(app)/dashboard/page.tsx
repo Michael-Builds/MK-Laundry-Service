@@ -12,12 +12,12 @@ import { Button } from "@/components/ui/Button";
 import { PageLoader } from "@/components/ui/PageLoader";
 import type { Order } from "@/data/types";
 import { useBootLoading } from "@/hooks/useBootLoading";
+import { api } from "@/lib/api-client";
 import {
   buildDailyBarData,
   buildDashboardStats,
   buildStatusPieData,
 } from "@/lib/dashboard";
-import { getOrders } from "@/lib/store";
 import {
   CheckCircle2,
   Clock3,
@@ -39,8 +39,9 @@ export default function DashboardPage() {
   const { user } = useSession();
   const [orders, setOrders] = useState<Order[]>([]);
 
-  const boot = useCallback(() => {
-    setOrders(getOrders());
+  const boot = useCallback(async () => {
+    const data = await api<{ orders: Order[] }>("/api/orders");
+    setOrders(data.orders);
   }, []);
 
   const ready = useBootLoading(boot);
@@ -48,15 +49,6 @@ export default function DashboardPage() {
   const stats = useMemo(() => buildDashboardStats(orders), [orders]);
   const barData = useMemo(() => buildDailyBarData(orders), [orders]);
   const pieData = useMemo(() => buildStatusPieData(orders), [orders]);
-
-  const allOrders = useMemo(
-    () =>
-      [...orders].sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      ),
-    [orders],
-  );
 
   if (!ready) {
     return (
@@ -87,7 +79,7 @@ export default function DashboardPage() {
             Welcome back, {user?.fullName}
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            Live view of every ticket on the floor - filter further on Orders if you need it.
+            Live view of every ticket on the floor — filter further on Orders if you need it.
           </p>
         </div>
         <Link href="/orders">
@@ -114,7 +106,7 @@ export default function DashboardPage() {
         <div className="mb-4">
           <h2 className="text-lg font-semibold text-ink">Insights</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Trends for managers - secondary to live floor work.
+            Trends for managers — secondary to live floor work.
           </p>
         </div>
         <div className="grid gap-4 xl:grid-cols-2">
@@ -137,7 +129,7 @@ export default function DashboardPage() {
             </Button>
           </Link>
         </div>
-        <OrderTable orders={allOrders} />
+        <OrderTable orders={orders} />
       </section>
     </div>
   );

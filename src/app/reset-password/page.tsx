@@ -5,15 +5,10 @@ import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { ScreenLoader } from "@/components/ui/PageLoader";
 import { PasswordInput } from "@/components/ui/PasswordInput";
-import {
-  clearResetToken,
-  getResetToken,
-  resetEmployeePassword,
-} from "@/lib/store";
-import { wait } from "@/lib/wait";
+import { ApiError, api } from "@/lib/api-client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, Suspense, useEffect, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -25,21 +20,9 @@ function ResetPasswordForm() {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
-  const [tokenValid, setTokenValid] = useState(false);
-  const [checking, setChecking] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    const stored = getResetToken();
-    const valid = Boolean(
-      stored &&
-        stored.expiresAt >= Date.now() &&
-        stored.token === tokenParam &&
-        stored.username.toLowerCase() === usernameParam.toLowerCase(),
-    );
-    setTokenValid(valid);
-    setChecking(false);
-  }, [tokenParam, usernameParam]);
+  const tokenValid = Boolean(usernameParam && tokenParam);
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -55,22 +38,22 @@ function ResetPasswordForm() {
     }
 
     setSubmitting(true);
-    await wait();
-    const result = resetEmployeePassword(usernameParam, password);
-    if (result) {
-      setError(result);
+    try {
+      await api("/api/auth/reset-password", {
+        method: "POST",
+        json: {
+          username: usernameParam,
+          token: tokenParam,
+          password,
+        },
+      });
+      setDone(true);
+      window.setTimeout(() => router.replace("/login"), 1200);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not reset password.");
       setSubmitting(false);
-      return;
     }
-
-    clearResetToken();
-    setDone(true);
-    window.setTimeout(() => router.replace("/login"), 1200);
   };
-
-  if (checking) {
-    return <ScreenLoader label="Checking reset link..." />;
-  }
 
   return (
     <AuthShell
@@ -97,6 +80,10 @@ function ResetPasswordForm() {
             <Button fullWidth>Request new link</Button>
           </Link>
         </div>
+      ) : done ? (
+        <p className="rounded-xl border border-teal/20 bg-teal-soft px-4 py-3 text-sm text-ink">
+          Password updated. Redirecting to sign in...
+        </p>
       ) : (
         <form className="space-y-4" onSubmit={onSubmit}>
           <Field label="New password" htmlFor="password" required>
@@ -105,7 +92,7 @@ function ResetPasswordForm() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
-              disabled={submitting || done}
+              disabled={submitting}
             />
           </Field>
           <Field label="Confirm password" htmlFor="confirm" required>
@@ -114,23 +101,17 @@ function ResetPasswordForm() {
               value={confirm}
               onChange={(event) => setConfirm(event.target.value)}
               required
-              disabled={submitting || done}
+              disabled={submitting}
             />
           </Field>
           {error ? (
             <p className="text-sm font-medium text-[var(--danger)]">{error}</p>
-          ) : null}
-          {done ? (
-            <p className="text-sm font-medium text-teal">
-              Password updated. Redirecting to sign in...
-            </p>
           ) : null}
           <Button
             type="submit"
             fullWidth
             loading={submitting}
             loadingText="Updating..."
-            disabled={done}
           >
             Update password
           </Button>

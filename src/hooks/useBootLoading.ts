@@ -1,18 +1,25 @@
 "use client";
 
-import { wait } from "@/lib/wait";
 import { useEffect, useState } from "react";
 
-export function useBootLoading(boot?: () => void, delay = 350) {
+export function useBootLoading(
+  boot?: () => void | Promise<void>,
+  delay = 0,
+) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let alive = true;
 
     const run = async () => {
-      boot?.();
-      await wait(delay);
-      if (alive) setReady(true);
+      try {
+        await boot?.();
+        if (delay > 0) {
+          await new Promise((resolve) => window.setTimeout(resolve, delay));
+        }
+      } finally {
+        if (alive) setReady(true);
+      }
     };
 
     void run();

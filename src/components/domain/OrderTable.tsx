@@ -16,7 +16,7 @@ export function OrderTable({ orders }: { orders: Order[] }) {
         id: "order",
         header: "Order",
         cell: (order) => (
-          <span className="font-semibold text-ink">{order.id}</span>
+          <span className="font-semibold text-ink">{order.code}</span>
         ),
       },
       {

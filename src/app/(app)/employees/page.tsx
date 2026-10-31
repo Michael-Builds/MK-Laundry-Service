@@ -10,13 +10,12 @@ import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Select } from "@/components/ui/Select";
 import type { Employee, Role } from "@/data/types";
-import { PageLoader } from "@/components/ui/PageLoader";
 import { useBootLoading } from "@/hooks/useBootLoading";
-import { getEmployees, saveEmployees } from "@/lib/store";
-import { wait } from "@/lib/wait";
+import { ApiError, api } from "@/lib/api-client";
 import { UserPlus, Users } from "lucide-react";
 import { FormEvent, useCallback, useMemo, useState } from "react";
 
@@ -40,62 +39,75 @@ export default function EmployeesPage() {
   const [creating, setCreating] = useState(false);
   const [toggling, setToggling] = useState(false);
 
-  const boot = useCallback(() => {
-    setEmployees(getEmployees());
+  const boot = useCallback(async () => {
+    const data = await api<{ employees: Employee[] }>("/api/employees");
+    setEmployees(data.employees);
   }, []);
   const ready = useBootLoading(boot);
 
   const onCreate = async (event: FormEvent) => {
     event.preventDefault();
-    if (employees.some((employee) => employee.username === username.trim())) {
-      showToast("Username already exists", "error");
-      return;
-    }
-
     setCreating(true);
-    await wait();
-    const next: Employee = {
-      id: `emp-${Date.now()}`,
-      fullName: fullName.trim(),
-      username: username.trim(),
-      password,
-      role,
-      phone: phone.trim(),
-      email: email.trim(),
-      active: true,
-    };
-
-    const updated = [next, ...employees];
-    setEmployees(updated);
-    saveEmployees(updated);
-    setCreating(false);
-    setOpen(false);
-    setFullName("");
-    setUsername("");
-    setPassword("");
-    setRole("Employee");
-    setPhone("");
-    setEmail("");
-    showToast("Employee added", "success");
+    try {
+      const data = await api<{ employee: Employee }>("/api/employees", {
+        method: "POST",
+        json: {
+          fullName: fullName.trim(),
+          username: username.trim(),
+          password,
+          role,
+          phone: phone.trim(),
+          email: email.trim(),
+        },
+      });
+      setEmployees((current) => [data.employee, ...current]);
+      setOpen(false);
+      setFullName("");
+      setUsername("");
+      setPassword("");
+      setRole("Employee");
+      setPhone("");
+      setEmail("");
+      showToast("Employee added", "success");
+    } catch (error) {
+      showToast(
+        error instanceof ApiError ? error.message : "Could not add employee",
+        "error",
+      );
+    } finally {
+      setCreating(false);
+    }
   };
 
   const confirmToggle = async () => {
     if (!pendingToggle) return;
     setToggling(true);
-    await wait();
-    const updated = employees.map((employee) =>
-      employee.id === pendingToggle.id
-        ? { ...employee, active: !employee.active }
-        : employee,
-    );
-    setEmployees(updated);
-    saveEmployees(updated);
-    setToggling(false);
-    showToast(
-      pendingToggle.active ? "Employee deactivated" : "Employee activated",
-      "success",
-    );
-    setPendingToggle(null);
+    try {
+      const data = await api<{ employee: Employee }>(
+        `/api/employees/${pendingToggle.id}`,
+        {
+          method: "PATCH",
+          json: { active: !pendingToggle.active },
+        },
+      );
+      setEmployees((current) =>
+        current.map((employee) =>
+          employee.id === data.employee.id ? data.employee : employee,
+        ),
+      );
+      showToast(
+        pendingToggle.active ? "Employee deactivated" : "Employee activated",
+        "success",
+      );
+      setPendingToggle(null);
+    } catch (error) {
+      showToast(
+        error instanceof ApiError ? error.message : "Could not update employee",
+        "error",
+      );
+    } finally {
+      setToggling(false);
+    }
   };
 
   const columns = useMemo<DataTableColumn<Employee>[]>(

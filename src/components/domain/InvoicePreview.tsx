@@ -21,7 +21,7 @@ export function InvoicePreview({
           <p className="mt-1 text-sm text-slate-500">Invoice / Order ticket</p>
         </div>
         <div className="text-left sm:text-right">
-          <p className="text-sm font-semibold text-ink">{order.id}</p>
+          <p className="text-sm font-semibold text-ink">{order.code}</p>
           <div className="mt-2 flex sm:justify-end">
             <StatusBadge status={order.status} />
           </div>
@@ -85,11 +85,28 @@ export function InvoicePreview({
         </p>
       ) : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-teal/20 bg-teal-soft px-4 py-4">
-        <span className="font-semibold text-ink">Total due</span>
-        <span className="text-xl font-semibold text-teal sm:text-2xl">
-          {formatCurrency(order.total)}
-        </span>
+      <div className="space-y-2 rounded-xl border border-teal/20 bg-teal-soft px-4 py-4">
+        <div className="flex items-center justify-between text-sm text-slate-600">
+          <span>Subtotal</span>
+          <span>{formatCurrency(order.subtotal)}</span>
+        </div>
+        {order.discountAmount > 0 ? (
+          <div className="flex items-center justify-between text-sm text-slate-600">
+            <span>
+              Discount
+              {order.discountType === "Percent"
+                ? ` (${order.discountValue}%)`
+                : ""}
+            </span>
+            <span>-{formatCurrency(order.discountAmount)}</span>
+          </div>
+        ) : null}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-teal/20 pt-3">
+          <span className="font-semibold text-ink">Total due</span>
+          <span className="text-xl font-semibold text-teal sm:text-2xl">
+            {formatCurrency(order.total)}
+          </span>
+        </div>
       </div>
     </div>
   );

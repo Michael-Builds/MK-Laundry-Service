@@ -8,12 +8,18 @@ import { Button } from "@/components/ui/Button";
 import { DateInput } from "@/components/ui/DateInput";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
-import { SegmentedControl } from "@/components/ui/Select";
+import { SegmentedControl, Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { formatCurrency } from "@/data/orders";
-import type { OrderItem, PaymentMethod, Service } from "@/data/types";
-import { addOrder, getServices } from "@/lib/store";
-import { wait } from "@/lib/wait";
+import type {
+  DiscountType,
+  Order,
+  OrderItem,
+  PaymentMethod,
+  Service,
+} from "@/data/types";
+import { ApiError, api } from "@/lib/api-client";
+import { calcOrderTotals } from "@/lib/money";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
@@ -28,29 +34,48 @@ export default function NewOrderPage() {
   const [payment, setPayment] = useState<PaymentMethod>("Cash");
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<OrderItem[]>([]);
+  const [discountType, setDiscountType] = useState<DiscountType>("None");
+  const [discountValue, setDiscountValue] = useState("0");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const active = getServices().filter((service) => service.active);
-    setServices(active);
-    if (active[0]) {
-      setItems([
-        {
-          serviceId: active[0].id,
-          name: active[0].name,
-          quantity: 1,
-          unitPrice: active[0].unitPrice,
-        },
-      ]);
-    }
+    let alive = true;
+    const load = async () => {
+      try {
+        const data = await api<{ services: Service[] }>("/api/services");
+        if (!alive) return;
+        const active = data.services.filter((service) => service.active);
+        setServices(active);
+        if (active[0]) {
+          setItems([
+            {
+              serviceId: active[0].id,
+              name: active[0].name,
+              quantity: 1,
+              unitPrice: active[0].unitPrice,
+            },
+          ]);
+        }
+      } catch (error) {
+        if (!alive) return;
+        showToast(
+          error instanceof ApiError ? error.message : "Could not load services",
+          "error",
+        );
+      }
+    };
+    void load();
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     setDeliveryDate(tomorrow.toISOString().slice(0, 10));
-  }, []);
+    return () => {
+      alive = false;
+    };
+  }, [showToast]);
 
-  const total = useMemo(
-    () => items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0),
-    [items],
+  const totals = useMemo(
+    () => calcOrderTotals(items, discountType, Number(discountValue) || 0),
+    [items, discountType, discountValue],
   );
 
   const onSubmit = async (event: FormEvent) => {
@@ -60,26 +85,35 @@ export default function NewOrderPage() {
       showToast("Fill in customer, phone, and at least one item.", "error");
       return;
     }
+    if (services.length === 0) {
+      showToast("Add at least one active service before creating orders.", "error");
+      return;
+    }
 
     setSubmitting(true);
-    await wait(500);
-    const id = `ORD-${1043 + Math.floor(Math.random() * 80)}`;
-    addOrder({
-      id,
-      customerName: customerName.trim(),
-      phone: phone.trim(),
-      deliveryDate,
-      payment,
-      items,
-      total,
-      status: "Received",
-      tellerId: user.id,
-      createdAt: new Date().toISOString(),
-      notes: notes.trim() || undefined,
-    });
-
-    showToast(`Order ${id} created`, "success");
-    router.push(`/orders/${id}`);
+    try {
+      const data = await api<{ order: Order }>("/api/orders", {
+        method: "POST",
+        json: {
+          customerName: customerName.trim(),
+          phone: phone.trim(),
+          deliveryDate,
+          payment,
+          items,
+          notes: notes.trim() || undefined,
+          discountType,
+          discountValue: Number(discountValue) || 0,
+        },
+      });
+      showToast(`Order ${data.order.code} created`, "success");
+      router.push(`/orders/${data.order.id}`);
+    } catch (error) {
+      showToast(
+        error instanceof ApiError ? error.message : "Could not create order",
+        "error",
+      );
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -158,23 +192,80 @@ export default function NewOrderPage() {
               </p>
             </div>
 
-            <ServicePicker
-              services={services}
-              items={items}
-              onChange={setItems}
-            />
+            {services.length === 0 ? (
+              <p className="rounded-xl border border-line bg-mist px-4 py-3 text-sm text-slate-600">
+                No active services yet. Add services first, then create orders.
+              </p>
+            ) : (
+              <ServicePicker
+                services={services}
+                items={items}
+                onChange={setItems}
+              />
+            )}
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Discount type">
+                <Select
+                  value={discountType}
+                  onChange={(value) => {
+                    const next = value as DiscountType;
+                    setDiscountType(next);
+                    if (next === "None") setDiscountValue("0");
+                  }}
+                  options={[
+                    { value: "None", label: "No discount" },
+                    { value: "Percent", label: "Percentage (%)" },
+                    { value: "Fixed", label: "Fixed amount" },
+                  ]}
+                />
+              </Field>
+              <Field
+                label={
+                  discountType === "Percent" ? "Discount %" : "Discount amount"
+                }
+                htmlFor="discount-value"
+              >
+                <Input
+                  id="discount-value"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={discountValue}
+                  disabled={discountType === "None"}
+                  onChange={(event) => setDiscountValue(event.target.value)}
+                />
+              </Field>
+            </div>
 
             <div className="mt-auto space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-teal/20 bg-teal-soft px-4 py-4">
-                <div>
-                  <p className="text-sm text-slate-600">Amount due</p>
-                  <p className="text-xs text-slate-500">
-                    {items.length} item{items.length === 1 ? "" : "s"}
-                  </p>
+              <div className="space-y-2 rounded-xl border border-teal/20 bg-teal-soft px-4 py-4">
+                <div className="flex items-center justify-between text-sm text-slate-600">
+                  <span>Subtotal</span>
+                  <span>{formatCurrency(totals.subtotal)}</span>
                 </div>
-                <strong className="text-2xl text-teal sm:text-3xl">
-                  {formatCurrency(total)}
-                </strong>
+                {totals.discountAmount > 0 ? (
+                  <div className="flex items-center justify-between text-sm text-slate-600">
+                    <span>
+                      Discount
+                      {discountType === "Percent"
+                        ? ` (${Number(discountValue) || 0}%)`
+                        : ""}
+                    </span>
+                    <span>-{formatCurrency(totals.discountAmount)}</span>
+                  </div>
+                ) : null}
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-teal/20 pt-3">
+                  <div>
+                    <p className="text-sm text-slate-600">Amount due</p>
+                    <p className="text-xs text-slate-500">
+                      {items.length} item{items.length === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                  <strong className="text-2xl text-teal sm:text-3xl">
+                    {formatCurrency(totals.total)}
+                  </strong>
+                </div>
               </div>
 
               <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

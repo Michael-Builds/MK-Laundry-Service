@@ -1,14 +1,7 @@
 "use client";
 
-import {
-  authenticate,
-  clearSession,
-  getSession,
-  setSession,
-  toSessionUser,
-  type SessionUser,
-} from "@/data/session";
-import { getEmployees } from "@/lib/store";
+import type { SessionUser } from "@/data/types";
+import { ApiError, api } from "@/lib/api-client";
 import {
   createContext,
   useCallback,
@@ -22,9 +15,9 @@ import {
 interface SessionContextValue {
   user: SessionUser | null;
   loading: boolean;
-  login: (username: string, password: string) => string | null;
-  logout: () => void;
-  refreshUser: () => void;
+  login: (username: string, password: string) => Promise<string | null>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -33,39 +26,54 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const data = await api<{ user: SessionUser }>("/api/auth/me");
+      setUser(data.user);
+    } catch {
+      setUser(null);
+    }
+  }, []);
+
   useEffect(() => {
-    setUser(getSession());
-    setLoading(false);
+    let alive = true;
+    const boot = async () => {
+      try {
+        const data = await api<{ user: SessionUser }>("/api/auth/me");
+        if (alive) setUser(data.user);
+      } catch {
+        if (alive) setUser(null);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    };
+    void boot();
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  const login = useCallback((username: string, password: string) => {
-    const next = authenticate(username, password);
-    if (!next) return "Invalid username or password.";
-    setSession(next);
-    setUser(next);
-    return null;
+  const login = useCallback(async (username: string, password: string) => {
+    try {
+      const data = await api<{ user: SessionUser }>("/api/auth/login", {
+        method: "POST",
+        json: { username, password },
+      });
+      setUser(data.user);
+      return null;
+    } catch (error) {
+      if (error instanceof ApiError) return error.message;
+      return "Invalid username or password.";
+    }
   }, []);
 
-  const logout = useCallback(() => {
-    clearSession();
+  const logout = useCallback(async () => {
+    try {
+      await api("/api/auth/logout", { method: "POST" });
+    } catch {
+      // ignore
+    }
     setUser(null);
-  }, []);
-
-  const refreshUser = useCallback(() => {
-    const current = getSession();
-    if (!current) {
-      setUser(null);
-      return;
-    }
-    const employee = getEmployees().find((item) => item.id === current.id);
-    if (!employee) {
-      clearSession();
-      setUser(null);
-      return;
-    }
-    const next = toSessionUser(employee);
-    setSession(next);
-    setUser(next);
   }, []);
 
   const value = useMemo(

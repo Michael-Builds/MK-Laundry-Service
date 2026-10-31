@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { Toggle } from "@/components/ui/Toggle";
 import type { AppSettings } from "@/data/types";
-import { getSettings, saveSettings } from "@/lib/store";
-import { wait } from "@/lib/wait";
+import { ApiError, api } from "@/lib/api-client";
 import { useEffect, useState } from "react";
 
 export default function SettingsPage() {
@@ -18,8 +17,27 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setSettings(getSettings());
-  }, []);
+    let alive = true;
+    const load = async () => {
+      try {
+        const data = await api<{ settings: AppSettings }>("/api/settings");
+        if (alive) setSettings(data.settings);
+      } catch (error) {
+        if (alive) {
+          showToast(
+            error instanceof ApiError
+              ? error.message
+              : "Could not load settings",
+            "error",
+          );
+        }
+      }
+    };
+    void load();
+    return () => {
+      alive = false;
+    };
+  }, [showToast]);
 
   if (!settings) {
     return (
@@ -36,10 +54,21 @@ export default function SettingsPage() {
 
   const onSave = async () => {
     setSaving(true);
-    await wait();
-    saveSettings(settings);
-    setSaving(false);
-    showToast("Settings saved (demo session only)", "success");
+    try {
+      const data = await api<{ settings: AppSettings }>("/api/settings", {
+        method: "PUT",
+        json: settings,
+      });
+      setSettings(data.settings);
+      showToast("Settings saved", "success");
+    } catch (error) {
+      showToast(
+        error instanceof ApiError ? error.message : "Could not save settings",
+        "error",
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
