@@ -8,10 +8,12 @@ import { StatusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Field } from "@/components/ui/Field";
+import { Modal } from "@/components/ui/Modal";
 import { PageLoader } from "@/components/ui/PageLoader";
+import { Textarea } from "@/components/ui/Textarea";
 import type { Order, OrderStatus } from "@/data/types";
 import { ApiError, api } from "@/lib/api-client";
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, FileText, Printer } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -21,6 +23,7 @@ export default function OrderDetailPage() {
   const { showToast } = useToast();
   const [order, setOrder] = useState<Order | null>(null);
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
@@ -68,17 +71,38 @@ export default function OrderDetailPage() {
     );
   }
 
-  const applyStatus = async () => {
-    if (!pendingStatus) return;
+  const isCompleted = order.status === "Completed";
+  const cancelOpen = pendingStatus === "Cancelled";
+  const statusConfirmOpen = Boolean(pendingStatus) && pendingStatus !== "Cancelled";
+
+  const closeStatusFlow = () => {
+    if (updating) return;
+    setPendingStatus(null);
+    setCancelReason("");
+  };
+
+  const applyStatus = async (status: OrderStatus, reason?: string) => {
     setUpdating(true);
     try {
       const data = await api<{ order: Order }>(`/api/orders/${order.id}`, {
         method: "PATCH",
-        json: { status: pendingStatus },
+        json: {
+          status,
+          ...(status === "Cancelled" ? { cancelReason: reason } : {}),
+        },
       });
       setOrder(data.order);
-      showToast(`Status updated to ${pendingStatus}`, "success");
+      showToast(
+        status === "Cancelled"
+          ? "Order cancelled"
+          : `Status updated to ${status}`,
+        "success",
+      );
       setPendingStatus(null);
+      setCancelReason("");
+      if (status === "Completed") {
+        window.setTimeout(() => window.print(), 250);
+      }
     } catch (error) {
       showToast(
         error instanceof ApiError ? error.message : "Could not update status",
@@ -88,6 +112,16 @@ export default function OrderDetailPage() {
       setUpdating(false);
     }
   };
+
+  const confirmCancel = async () => {
+    if (cancelReason.trim().length < 3) {
+      showToast("Enter a cancellation reason (at least 3 characters).", "error");
+      return;
+    }
+    await applyStatus("Cancelled", cancelReason.trim());
+  };
+
+  const printInvoice = () => window.print();
 
   return (
     <div>
@@ -126,37 +160,97 @@ export default function OrderDetailPage() {
                 value={order.status}
                 onChange={(status) => {
                   if (status === order.status) return;
+                  setCancelReason("");
                   setPendingStatus(status);
                 }}
               />
             </Field>
 
-            <Button
-              variant="secondary"
-              fullWidth
-              icon={<Printer className="h-4 w-4" />}
-              onClick={() => window.print()}
-            >
-              Print invoice
-            </Button>
+            {isCompleted ? (
+              <Button
+                fullWidth
+                icon={<FileText className="h-4 w-4" />}
+                onClick={printInvoice}
+              >
+                Generate & print invoice
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                fullWidth
+                icon={<Printer className="h-4 w-4" />}
+                onClick={printInvoice}
+              >
+                Print invoice
+              </Button>
+            )}
+
+            {order.status === "Cancelled" && order.cancelReason ? (
+              <div className="rounded-xl border border-line bg-mist px-3 py-3 text-sm text-slate-600">
+                <p className="font-semibold text-ink">Cancel reason</p>
+                <p className="mt-1">{order.cancelReason}</p>
+              </div>
+            ) : null}
           </div>
         </aside>
       </div>
 
       <ConfirmDialog
-        open={Boolean(pendingStatus)}
-        onClose={() => setPendingStatus(null)}
-        onConfirm={applyStatus}
+        open={statusConfirmOpen}
+        onClose={closeStatusFlow}
+        onConfirm={() => {
+          if (!pendingStatus) return;
+          void applyStatus(pendingStatus);
+        }}
         title="Update order status?"
         description={
           pendingStatus
             ? `Change this order from ${order.status} to ${pendingStatus}.`
             : undefined
         }
-        confirmLabel="Update status"
+        confirmLabel={
+          pendingStatus === "Completed" ? "Mark completed & print" : "Update status"
+        }
         tone="primary"
         loading={updating}
       />
+
+      <Modal
+        open={cancelOpen}
+        onClose={closeStatusFlow}
+        title="Cancel order?"
+        className="max-w-md"
+        footer={
+          <>
+            <Button variant="ghost" onClick={closeStatusFlow} disabled={updating}>
+              Keep order
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => void confirmCancel()}
+              loading={updating}
+              loadingText="Cancelling..."
+            >
+              Cancel order
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <p className="text-sm leading-relaxed text-slate-600">
+            Staff must enter a reason before cancelling. This is saved on the order.
+          </p>
+          <Field label="Cancellation reason" htmlFor="cancel-reason" required>
+            <Textarea
+              id="cancel-reason"
+              value={cancelReason}
+              onChange={(event) => setCancelReason(event.target.value)}
+              placeholder="e.g. Customer requested cancellation, duplicate ticket..."
+              required
+            />
+          </Field>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -73,6 +73,11 @@ body {
   }
 
   body {
-    background: white;
+    background: white !important;
+  }
+
+  .invoice-sheet {
+    break-inside: avoid;
+    box-shadow: none !important;
   }
 }

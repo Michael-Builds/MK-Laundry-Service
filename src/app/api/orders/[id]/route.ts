@@ -27,9 +27,15 @@ export async function PATCH(request: Request, { params }: Params) {
   const { id } = await params;
   const body = (await request.json().catch(() => null)) as {
     status?: OrderStatus;
+    cancelReason?: string;
   } | null;
 
   if (!body?.status) return jsonError("Status is required.");
+
+  const cancelReason = body.cancelReason?.trim() ?? "";
+  if (body.status === "Cancelled" && cancelReason.length < 3) {
+    return jsonError("A cancellation reason is required (at least 3 characters).");
+  }
 
   const existing = await db.order.findFirst({
     where: { OR: [{ id }, { code: id }] },
@@ -38,7 +44,10 @@ export async function PATCH(request: Request, { params }: Params) {
 
   const order = await db.order.update({
     where: { id: existing.id },
-    data: { status: body.status },
+    data: {
+      status: body.status,
+      cancelReason: body.status === "Cancelled" ? cancelReason : null,
+    },
     include: { items: true, teller: { select: { fullName: true } } },
   });
 

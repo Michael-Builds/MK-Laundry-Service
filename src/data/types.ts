@@ -58,6 +58,7 @@ export interface Order {
   tellerName?: string;
   createdAt: string;
   notes?: string;
+  cancelReason?: string;
 }
 
 export interface AppSettings {

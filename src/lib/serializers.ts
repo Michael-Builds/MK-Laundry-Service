@@ -87,6 +87,7 @@ export function serializeOrder(
     tellerName: order.teller?.fullName,
     createdAt: order.createdAt.toISOString(),
     notes: order.notes ?? undefined,
+    cancelReason: order.cancelReason ?? undefined,
   };
 }
 

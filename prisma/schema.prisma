@@ -79,6 +79,7 @@ model Order {
   total          Decimal       @db.Decimal(10, 2)
   status         OrderStatus   @default(Received)
   notes          String?
+  cancelReason   String?
   tellerId       String
   teller         Employee      @relation("TellerOrders", fields: [tellerId], references: [id])
   createdAt      DateTime      @default(now())
