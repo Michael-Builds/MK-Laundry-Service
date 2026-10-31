@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  Administrator
+  Manager
+  Employee
+}
+
+enum OrderStatus {
+  Received
+  Washing
+  Ready
+  Completed
+  Cancelled
+}
+
+enum PaymentMethod {
+  Cash
+  MobileMoney @map("Mobile Money")
+}
+
+enum ServiceCategory {
+  Garment
+  Home
+  Specialty
+}
+
+enum DiscountType {
+  None
+  Percent
+  Fixed
+}
+
+model Employee {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  fullName     String
+  role         Role
+  phone        String
+  email        String
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  orders       Order[]  @relation("TellerOrders")
+  resetTokens  PasswordResetToken[]
+}
+
+model Service {
+  id          String          @id @default(cuid())
+  name        String
+  unitPrice   Decimal         @db.Decimal(10, 2)
+  category    ServiceCategory
+  active      Boolean         @default(true)
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id             String        @id @default(cuid())
+  code           String        @unique
+  customerName   String
+  phone          String
+  deliveryDate   DateTime      @db.Date
+  payment        PaymentMethod
+  subtotal       Decimal       @db.Decimal(10, 2)
+  discountType   DiscountType  @default(None)
+  discountValue  Decimal       @db.Decimal(10, 2) @default(0)
+  discountAmount Decimal       @db.Decimal(10, 2) @default(0)
+  total          Decimal       @db.Decimal(10, 2)
+  status         OrderStatus   @default(Received)
+  notes          String?
+  tellerId       String
+  teller         Employee      @relation("TellerOrders", fields: [tellerId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  items          OrderItem[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([tellerId])
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  serviceId String?
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  name      String
+  quantity  Int
+  unitPrice Decimal  @db.Decimal(10, 2)
+
+  @@index([orderId])
+  @@index([serviceId])
+}
+
+model AppSettings {
+  id               String   @id @default("default")
+  businessName     String
+  currency         String
+  currencySymbol   String
+  notifyReady      Boolean  @default(true)
+  autoPrintInvoice Boolean  @default(false)
+  requirePhone     Boolean  @default(true)
+  lowStockAlerts   Boolean  @default(false)
+  updatedAt        DateTime @updatedAt
+}
+
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([employeeId])
+}
