@@ -1,50 +1,31 @@
 {
-  "name": "laundry-desk",
+  "name": "mk-laundry-service",
   "version": "1.0.0",
-  "description": "MK Laundry Service web application",
-  "author": "MK Laundry Service",
-  "main": "main.js",
+  "private": true,
+  "description": "MK Laundry Service staff operations console",
   "scripts": {
-    "start": "node server.js",
-    "tunnel": "lt --port 3000",
-    "desktop": "electron .",
-    "build:windows": "electron-builder --win"
-  },
-  "build": {
-    "appId": "com.mklaundry.service",
-    "productName": "MK Laundry Service",
-    "files": [
-      "index.html",
-      "styles.css",
-      "renderer.js",
-      "server.js",
-      "db.js",
-      "main.js",
-      "package.json",
-      "node_modules/**/*"
-    ],
-    "win": {
-      "target": "nsis",
-      "artifactName": "MK-Laundry-Service-Setup-${version}.${ext}"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
-    }
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    "@opentelemetry/api": "^1.10.0",
-    "@supabase/supabase-js": "^2.118.0",
-    "better-sqlite3": "^13.0.3",
-    "dotenv": "^16.6.1",
-    "firebase-admin": "^13.6.0"
+    "lucide-react": "^1.66.0",
+    "next": "^15.5.28",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
-    "electron": "^39.0.0",
-    "electron-builder": "^26.0.12",
-    "localtunnel": "^2.0.2",
-    "supabase": "^2.122.0"
+    "@eslint/eslintrc": "^3.3.7",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "autoprefixer": "^10.6.2",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^15.5.28",
+    "postcss": "^8.5.32",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.9.3"
   }
 }
