@@ -9,7 +9,7 @@ import { ScreenLoader } from "@/components/ui/PageLoader";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { SubmitEvent, useEffect, useState } from "react";
 
 export default function LoginPage() {
   const { user, loading, login } = useSession();
@@ -23,7 +23,7 @@ export default function LoginPage() {
     if (!loading && user) router.replace("/dashboard");
   }, [loading, user, router]);
 
-  const onSubmit = async (event: FormEvent) => {
+  const onSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
     setSubmitting(true);
     setError("");
@@ -52,6 +52,7 @@ export default function LoginPage() {
             autoComplete="username"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
+            placeholder="Enter your username"
             required
             disabled={submitting}
           />
@@ -62,6 +63,7 @@ export default function LoginPage() {
             autoComplete="current-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
+            placeholder="Enter your password"
             required
             disabled={submitting}
           />

@@ -6,7 +6,7 @@ import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import { ApiError, api } from "@/lib/api-client";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { SubmitEvent, useState } from "react";
 
 export default function ForgotPasswordPage() {
   const [username, setUsername] = useState("");
@@ -14,7 +14,7 @@ export default function ForgotPasswordPage() {
   const [resetPath, setResetPath] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const onSubmit = async (event: FormEvent) => {
+  const onSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
     setError("");
     setSubmitting(true);

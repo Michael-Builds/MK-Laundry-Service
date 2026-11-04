@@ -17,7 +17,7 @@ import type { Service } from "@/data/types";
 import { useBootLoading } from "@/hooks/useBootLoading";
 import { ApiError, api } from "@/lib/api-client";
 import { Plus, Shirt } from "lucide-react";
-import { FormEvent, useCallback, useMemo, useState } from "react";
+import { SubmitEvent, useCallback, useMemo, useState } from "react";
 
 export default function ServicesPage() {
   const { showToast } = useToast();
@@ -37,7 +37,7 @@ export default function ServicesPage() {
   }, []);
   const ready = useBootLoading(boot);
 
-  const onCreate = async (event: FormEvent) => {
+  const onCreate = async (event: SubmitEvent) => {
     event.preventDefault();
     setCreating(true);
     try {
@@ -221,6 +221,7 @@ export default function ServicesPage() {
               id="service-name"
               value={name}
               onChange={(event) => setName(event.target.value)}
+              placeholder="e.g. Shirt"
               required
             />
           </Field>
@@ -233,6 +234,7 @@ export default function ServicesPage() {
                 step="0.01"
                 value={unitPrice}
                 onChange={(event) => setUnitPrice(event.target.value)}
+                placeholder="e.g. 10.00"
                 required
               />
             </Field>

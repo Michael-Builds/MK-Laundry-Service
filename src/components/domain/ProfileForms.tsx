@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/Input";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import type { Employee } from "@/data/types";
 import { ApiError, api } from "@/lib/api-client";
-import { FormEvent, useEffect, useState } from "react";
+import { SubmitEvent, useEffect, useState } from "react";
 
 export function UpdateProfileForm() {
   const { user, refreshUser } = useSession();
@@ -52,7 +52,7 @@ export function UpdateProfileForm() {
     }
   };
 
-  const onSubmit = (event: FormEvent) => {
+  const onSubmit = (event: SubmitEvent) => {
     event.preventDefault();
     setConfirmOpen(true);
   };
@@ -74,6 +74,7 @@ export function UpdateProfileForm() {
             id="profile-name"
             value={fullName}
             onChange={(event) => setFullName(event.target.value)}
+            placeholder="Your full name"
             required
           />
         </Field>
@@ -83,6 +84,7 @@ export function UpdateProfileForm() {
               id="profile-phone"
               value={phone}
               onChange={(event) => setPhone(event.target.value)}
+              placeholder="0XX XXX XXXX"
             />
           </Field>
           <Field label="Email" htmlFor="profile-email">
@@ -91,6 +93,7 @@ export function UpdateProfileForm() {
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@mklaundry.gh"
             />
           </Field>
         </div>
@@ -155,7 +158,7 @@ export function ChangePasswordForm() {
     }
   };
 
-  const onSubmit = (event: FormEvent) => {
+  const onSubmit = (event: SubmitEvent) => {
     event.preventDefault();
     setError("");
     if (nextPassword !== confirmPassword) {
@@ -182,6 +185,7 @@ export function ChangePasswordForm() {
             id="current-password"
             value={currentPassword}
             onChange={(event) => setCurrentPassword(event.target.value)}
+            placeholder="Current password"
             required
           />
         </Field>
@@ -191,6 +195,7 @@ export function ChangePasswordForm() {
               id="new-password"
               value={nextPassword}
               onChange={(event) => setNextPassword(event.target.value)}
+              placeholder="At least 4 characters"
               required
             />
           </Field>
@@ -199,6 +204,7 @@ export function ChangePasswordForm() {
               id="confirm-password"
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
+              placeholder="Repeat new password"
               required
             />
           </Field>

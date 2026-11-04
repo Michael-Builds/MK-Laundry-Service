@@ -30,7 +30,7 @@ import { calcOrderTotals } from "@/lib/money";
 import { ArrowLeft, FileText, Pencil, Printer, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { SubmitEvent, useEffect, useMemo, useState } from "react";
 
 export default function OrderDetailPage() {
   const params = useParams<{ id: string }>();
@@ -196,7 +196,7 @@ export default function OrderDetailPage() {
     await applyStatus("Cancelled", cancelReason.trim());
   };
 
-  const saveEdit = async (event: FormEvent) => {
+  const saveEdit = async (event: SubmitEvent) => {
     event.preventDefault();
     if (!customerName.trim() || !phone.trim() || items.length === 0) {
       showToast("Fill in customer, phone, and at least one item.", "error");
@@ -436,6 +436,7 @@ export default function OrderDetailPage() {
                 id="edit-name"
                 value={customerName}
                 onChange={(event) => setCustomerName(event.target.value)}
+                placeholder="Full name"
                 required
               />
             </Field>
@@ -444,6 +445,7 @@ export default function OrderDetailPage() {
                 id="edit-phone"
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
+                placeholder="0XX XXX XXXX"
                 required
               />
             </Field>
@@ -472,7 +474,7 @@ export default function OrderDetailPage() {
               id="edit-notes"
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
-              placeholder="Optional notes"
+              placeholder="No starch, delicate wash..."
             />
           </Field>
 
@@ -508,6 +510,7 @@ export default function OrderDetailPage() {
                 value={discountValue}
                 disabled={discountType === "None"}
                 onChange={(event) => setDiscountValue(event.target.value)}
+                placeholder={discountType === "Percent" ? "e.g. 10" : "e.g. 5.00"}
               />
             </Field>
           </div>

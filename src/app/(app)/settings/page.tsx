@@ -99,6 +99,7 @@ export default function SettingsPage() {
                 onChange={(event) =>
                   patch({ businessName: event.target.value })
                 }
+                placeholder="MK Laundry Service"
               />
             </Field>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -107,6 +108,7 @@ export default function SettingsPage() {
                   id="currency"
                   value={settings.currency}
                   onChange={(event) => patch({ currency: event.target.value })}
+                  placeholder="Ghana Cedi"
                 />
               </Field>
               <Field label="Symbol" htmlFor="symbol">
@@ -116,6 +118,7 @@ export default function SettingsPage() {
                   onChange={(event) =>
                     patch({ currencySymbol: event.target.value })
                   }
+                  placeholder="GH₵"
                 />
               </Field>
             </div>

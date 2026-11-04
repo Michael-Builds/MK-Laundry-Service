@@ -92,6 +92,7 @@ export function ServicePicker({
                   quantity: Math.max(1, Number(event.target.value) || 1),
                 })
               }
+              placeholder="1"
               aria-label={`Quantity for item ${index + 1}`}
             />
           </div>

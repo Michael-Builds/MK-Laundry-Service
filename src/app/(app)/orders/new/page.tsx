@@ -21,7 +21,7 @@ import type {
 import { ApiError, api } from "@/lib/api-client";
 import { calcOrderTotals } from "@/lib/money";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { SubmitEvent, useEffect, useMemo, useState } from "react";
 
 export default function NewOrderPage() {
   const { user } = useSession();
@@ -78,7 +78,7 @@ export default function NewOrderPage() {
     [items, discountType, discountValue],
   );
 
-  const onSubmit = async (event: FormEvent) => {
+  const onSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
     if (!user || submitting) return;
     if (!customerName.trim() || !phone.trim() || items.length === 0) {
@@ -234,6 +234,7 @@ export default function NewOrderPage() {
                   value={discountValue}
                   disabled={discountType === "None"}
                   onChange={(event) => setDiscountValue(event.target.value)}
+                  placeholder={discountType === "Percent" ? "e.g. 10" : "e.g. 5.00"}
                 />
               </Field>
             </div>

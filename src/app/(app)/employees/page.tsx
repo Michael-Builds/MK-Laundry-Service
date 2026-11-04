@@ -17,7 +17,7 @@ import type { Employee, Role } from "@/data/types";
 import { useBootLoading } from "@/hooks/useBootLoading";
 import { ApiError, api } from "@/lib/api-client";
 import { UserPlus, Users } from "lucide-react";
-import { FormEvent, useCallback, useMemo, useState } from "react";
+import { SubmitEvent, useCallback, useMemo, useState } from "react";
 
 const roleBadge: Record<Role, string> = {
   Administrator: "border border-ink bg-ink text-white",
@@ -45,7 +45,7 @@ export default function EmployeesPage() {
   }, []);
   const ready = useBootLoading(boot);
 
-  const onCreate = async (event: FormEvent) => {
+  const onCreate = async (event: SubmitEvent) => {
     event.preventDefault();
     setCreating(true);
     try {
@@ -240,6 +240,7 @@ export default function EmployeesPage() {
               id="emp-name"
               value={fullName}
               onChange={(event) => setFullName(event.target.value)}
+              placeholder="e.g. Ama Mensah"
               required
             />
           </Field>
@@ -249,6 +250,7 @@ export default function EmployeesPage() {
                 id="emp-username"
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
+                placeholder="e.g. ama"
                 required
               />
             </Field>
@@ -257,6 +259,7 @@ export default function EmployeesPage() {
                 id="emp-password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
+                placeholder="At least 4 characters"
                 required
               />
             </Field>
@@ -279,6 +282,7 @@ export default function EmployeesPage() {
                 id="emp-phone"
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
+                placeholder="0XX XXX XXXX"
               />
             </Field>
             <Field label="Email" htmlFor="emp-email">
@@ -287,6 +291,7 @@ export default function EmployeesPage() {
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
+                placeholder="name@mklaundry.gh"
               />
             </Field>
           </div>

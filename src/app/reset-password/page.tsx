@@ -8,7 +8,7 @@ import { PasswordInput } from "@/components/ui/PasswordInput";
 import { ApiError, api } from "@/lib/api-client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, Suspense, useState } from "react";
+import { SubmitEvent, Suspense, useState } from "react";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -24,7 +24,7 @@ function ResetPasswordForm() {
 
   const tokenValid = Boolean(usernameParam && tokenParam);
 
-  const onSubmit = async (event: FormEvent) => {
+  const onSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
     setError("");
 
@@ -91,6 +91,7 @@ function ResetPasswordForm() {
               id="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
+              placeholder="At least 4 characters"
               required
               disabled={submitting}
             />
@@ -100,6 +101,7 @@ function ResetPasswordForm() {
               id="confirm"
               value={confirm}
               onChange={(event) => setConfirm(event.target.value)}
+              placeholder="Repeat new password"
               required
               disabled={submitting}
             />
