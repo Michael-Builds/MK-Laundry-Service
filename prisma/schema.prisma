@@ -80,6 +80,7 @@ model Order {
   status         OrderStatus   @default(Received)
   notes          String?
   cancelReason   String?
+  deletedAt      DateTime?
   tellerId       String
   teller         Employee      @relation("TellerOrders", fields: [tellerId], references: [id])
   createdAt      DateTime      @default(now())
@@ -89,6 +90,7 @@ model Order {
   @@index([status])
   @@index([createdAt])
   @@index([tellerId])
+  @@index([deletedAt])
 }
 
 model OrderItem {

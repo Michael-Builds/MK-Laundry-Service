@@ -13,9 +13,19 @@ export async function GET(request: Request) {
   const status = searchParams.get("status");
 
   const orders = await db.order.findMany({
-    where: status
-      ? { status: status as "Received" | "Washing" | "Ready" | "Completed" | "Cancelled" }
-      : undefined,
+    where: {
+      deletedAt: null,
+      ...(status
+        ? {
+            status: status as
+              | "Received"
+              | "Washing"
+              | "Ready"
+              | "Completed"
+              | "Cancelled",
+          }
+        : {}),
+    },
     include: { items: true, teller: { select: { fullName: true } } },
     orderBy: { createdAt: "desc" },
   });
