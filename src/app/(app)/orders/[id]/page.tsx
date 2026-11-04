@@ -521,16 +521,46 @@ export default function OrderDetailPage() {
         </form>
       </Modal>
 
-      <ConfirmDialog
+      <Modal
         open={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={() => void confirmDelete()}
+        onClose={() => {
+          if (!deleting) setDeleteOpen(false);
+        }}
         title="Delete order?"
-        description={`${order.code} will be removed from the live list. Admins can recover it from the database later if needed.`}
-        confirmLabel="Delete order"
-        tone="danger"
-        loading={deleting}
-      />
+        className="max-w-md"
+        footer={
+          <>
+            <Button
+              variant="ghost"
+              onClick={() => setDeleteOpen(false)}
+              disabled={deleting}
+            >
+              Keep order
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => void confirmDelete()}
+              loading={deleting}
+              loadingText="Deleting..."
+              icon={<Trash2 className="h-4 w-4" />}
+            >
+              Yes, delete order
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <p className="text-sm leading-relaxed text-slate-600">
+            Are you sure you want to delete{" "}
+            <span className="font-semibold text-ink">{order.code}</span>? It
+            will be removed from the live orders list.
+          </p>
+          <p className="rounded-xl border border-line bg-mist px-3 py-2.5 text-sm text-slate-600">
+            This is a soft delete — the record is kept in the database and can
+            be recovered later if needed.
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 }
